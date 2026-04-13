@@ -429,3 +429,5 @@ FodyWeavers.xsd
 ###############################
 # normal git ignore start here
 ##############################
+
+obj/*
