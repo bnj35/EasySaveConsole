@@ -1,6 +1,12 @@
-﻿Console.WriteLine("Welcome in EasySave!");
-Console.WriteLine("Enter the source folder path :");
+﻿class Program
+{
+    static void Main(string[] args)
+    {
+        Console.WriteLine("====== Welcome in EasySave ========");
+        Console.WriteLine("What do you want to do ?");
+        Console.WriteLine("1. Save a file");
+        Console.WriteLine("2. Save multiple files");
+        Console.WriteLine("===================================");
 
-string SourceFolderPath = Console.ReadLine()!;
-
-Console.WriteLine("Source Folder parth is " + SourceFolderPath);
+    }
+}
