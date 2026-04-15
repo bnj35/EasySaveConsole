@@ -46,6 +46,11 @@
                     Console.WriteLine("Choice 3 selected");
                     break;
 
+                case '4':
+                    SearchJob(joblist);
+
+                    break;
+
                 default:
 
                     Console.WriteLine("Invalid choice, please try again.");
@@ -75,6 +80,8 @@
         Console.WriteLine("2. Display all");
 
         Console.WriteLine("3. Run a backup job");
+
+        Console.WriteLine("4. Search for a backup job");
 
         Console.WriteLine("0. Press 0 to exit");
 
@@ -108,6 +115,47 @@
 
         Console.WriteLine($"New backup job created {newJob}");
     }
+
+    static void SearchJob(JobList jobList)
+
+    {
+
+        Console.Write("Enter the name of the job to search for:");
+
+        string name = Console.ReadLine()!;
+
+        BackUpJob job = jobList.SearchJob(name);
+
+        if (job != null)
+
+        {
+
+            Console.WriteLine(job.Name);
+
+        }
+
+        else
+
+        {
+
+            Console.WriteLine($"The book '{name}' was not found.");
+
+        }
+
+    }
+
+    // static void RunJob()
+    // {
+    //     Console.WriteLine("Enter the name of the job you want to run:");
+
+    //     string name = Console.ReadLine();
+
+    //     // string job = SearchJob();
+
+    //     Console.WriteLine($"the job is {name}");
+
+    //     // SearchJob
+    // }
 
 
 }

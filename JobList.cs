@@ -39,5 +39,25 @@ public class JobList
 
         }
     }
+
+    public BackUpJob SearchJob(string name)
+    {
+        return jobs.FirstOrDefault(l => l.Name.Equals(name, StringComparison.OrdinalIgnoreCase))!;
+    }
+
+    public void RunJob(string name)
+    {
+        BackUpJob job = SearchJob(name);
+
+        if (job != null)
+        {
+            // jobs.Run(job);
+            Console.WriteLine("job running");
+        }
+        else
+        {
+            Console.WriteLine("no job");
+        }
+    }
 }
 
