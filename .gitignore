@@ -98,7 +98,6 @@ StyleCopReport.xml
 *_h.h
 *.ilk
 *.meta
-*.obj
 *.idb
 *.iobj
 *.pch
@@ -429,5 +428,7 @@ FodyWeavers.xsd
 ###############################
 # normal git ignore start here
 ##############################
-
-obj/*
+obj/Debug/*
+obj/Debug/net10.0/EasySaveConsole.AssemblyInfo.cs
+obj/Debug/net10.0/EasySaveConsole.AssemblyInfoInputs.cache
+obj
