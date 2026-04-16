@@ -32,20 +32,26 @@ class Program
                     break;
 
                 case '1':
-                    Console.WriteLine(T("choice.1"));
-                    CreateJob(joblist);
+
+                   Console.WriteLine(T("choice.1"));
+                    createJob(joblist);
+
                     break;
 
                 case '2':
-                    joblist.DisplayAllJob();
+
+                    joblist.displayAllJob();
                     break;
 
                 case '3':
+
                     Console.WriteLine(T("choice.3"));
+                    runJob(joblist);
                     break;
 
                 case '4':
-                    SearchJob(joblist);
+                    searchJob(joblist);
+
                     break;
 
                 default:
@@ -72,7 +78,7 @@ class Program
         Console.Write(T("menu.choice"));
     }
 
-    static void CreateJob(JobList joblist)
+    static void createJob(JobList joblist)
     {
         Console.WriteLine(T("create.name"));
 
@@ -80,13 +86,11 @@ class Program
 
         Console.WriteLine(T("create.source"));
 
-        string SourceDirectory = Console.ReadLine()!;
-
-        Console.WriteLine(string.Format(T("create.source.confirm"), SourceDirectory));
+      string SourceDirectory = VerifyPath(Console.ReadLine()!);
 
         Console.WriteLine(T("create.target"));
 
-        string TargetDirectory = Console.ReadLine()!;
+        string TargetDirectory = VerifyPath(Console.ReadLine()!);
 
         BackUpJob newJob = new BackUpJob(Name, SourceDirectory, TargetDirectory)
         {
@@ -98,13 +102,14 @@ class Program
         Console.WriteLine(string.Format(T("create.success"), Name));
     }
 
-    static BackUpJob? SearchJob(JobList jobList)
+    static BackUpJob? searchJob(JobList jobList)
+
     {
         Console.Write(T("search.prompt"));
 
         string name = Console.ReadLine()!;
 
-        BackUpJob job = jobList.SearchJob(name);
+        BackUpJob job = jobList.searchJob(name);
 
         if (job != null)
         {
@@ -118,14 +123,52 @@ class Program
         }
     }
 
-    static void RunJob(JobList joblist)
+    static void runJob(JobList joblist)
     {
-        BackUpJob? job = SearchJob(joblist);
+        BackUpJob? job = searchJob(joblist);
 
         if (job != null)
         {
             Console.WriteLine(string.Format(T("run.found"), job.Name));
-            // Here you could call joblist.RunJob(job.Name) to execute
+            ActiveJob jobActive = new ActiveJob(job.Name, job.SourceDirectory, job.TargetDirectory);
+            jobActive.runJob();
+
+        }
+        // searchJob
+    }
+
+    // verify if a path is correct
+    static string VerifyPath(string path)
+    {
+        string newPath = path ?? "";
+
+        while (true)
+        {
+            if (!string.IsNullOrEmpty(newPath) && Path.IsPathFullyQualified(newPath) && Path.IsPathRooted(newPath))
+            {
+                return Path.GetFullPath(newPath);
+            }
+            else
+            {
+                Console.WriteLine("The path isn't valid, try again :");
+                newPath = Console.ReadLine() ?? "";
+            }
         }
     }
+
+
 }
+
+// I follow these steps
+/*
+- Does the source exist and is valid ?
+- Will I overwrite? => type gestion
+- Should I log the operation ? => antoine 
+- Do I need async?
+- Do I need to show progress? => yes
+- What if the copy fails? => restart 3 times max => Should I implement retries?
+- Are permissions OK?
+- Do I need temp-file atomic writes?
+- Local vs Network drive?
+- Small, medium, or huge files?
+*/

@@ -432,3 +432,4 @@ obj/Debug/*
 obj/Debug/net10.0/EasySaveConsole.AssemblyInfo.cs
 obj/Debug/net10.0/EasySaveConsole.AssemblyInfoInputs.cache
 obj
+.DS_Store
