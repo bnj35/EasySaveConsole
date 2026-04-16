@@ -6,10 +6,7 @@ class Program
     static void Main(string[] args)
     {
         // language selection
-        Console.WriteLine("Choose a language / Choisis une langue: \n'en' for english\n'fr' pour français");
-        string lang = Console.ReadLine()?.Trim().ToLower() ?? "en";
-        if (lang != "fr" && lang != "en") lang = "en";
-        LanguageService.Load(lang);
+        SelectLanguage();
 
         // list of backup jobs
         JobList joblist = new JobList();
@@ -33,7 +30,7 @@ class Program
 
                 case '1':
 
-                   Console.WriteLine(T("choice.1"));
+                    Console.WriteLine(T("choice.1"));
                     createJob(joblist);
 
                     break;
@@ -65,6 +62,7 @@ class Program
         }
     }
 
+// display the base menu with whole the actions available
     static void DisplayMenu()
     {
         Console.WriteLine(T("menu.title"));
@@ -78,6 +76,7 @@ class Program
         Console.Write(T("menu.choice"));
     }
 
+// create a backup job
     static void createJob(JobList joblist)
     {
         Console.WriteLine(T("create.name"));
@@ -86,7 +85,7 @@ class Program
 
         Console.WriteLine(T("create.source"));
 
-      string SourceDirectory = VerifyPath(Console.ReadLine()!);
+        string SourceDirectory = VerifyPath(Console.ReadLine()!);
 
         Console.WriteLine(T("create.target"));
 
@@ -102,6 +101,7 @@ class Program
         Console.WriteLine(string.Format(T("create.success"), Name));
     }
 
+// look for a backup job
     static BackUpJob? searchJob(JobList jobList)
 
     {
@@ -123,6 +123,7 @@ class Program
         }
     }
 
+// run the job
     static void runJob(JobList joblist)
     {
         BackUpJob? job = searchJob(joblist);
@@ -138,7 +139,7 @@ class Program
     }
 
     // verify if a path is correct
-    static string VerifyPath(string path)
+    public static string VerifyPath(string path)
     {
         string newPath = path ?? "";
 
@@ -156,6 +157,14 @@ class Program
         }
     }
 
+// select the language for translation
+    static void SelectLanguage()
+    {
+        Console.WriteLine("Choose a language / Choisis une langue: \n'en' for english\n'fr' pour français");
+        string lang = Console.ReadLine()?.Trim().ToLower() ?? "en";
+        if (lang != "fr" && lang != "en") lang = "en";
+        LanguageService.Load(lang);
+    }
 
 }
 
