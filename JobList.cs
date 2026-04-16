@@ -17,7 +17,7 @@ public class JobList
 
     }
 
-    public void DisplayAllJob()
+    public void displayAllJob()
     {
         if (jobs.Count > 0)
 
@@ -44,14 +44,14 @@ public class JobList
         }
     }
 
-    public BackUpJob SearchJob(string name)
+    public BackUpJob searchJob(string name)
     {
         return jobs.FirstOrDefault(l => l.Name.Equals(name, StringComparison.OrdinalIgnoreCase))!;
     }
 
     public void RunJob(string name)
     {
-        BackUpJob job = SearchJob(name);
+        BackUpJob job = searchJob(name);
 
         if (job != null)
         {

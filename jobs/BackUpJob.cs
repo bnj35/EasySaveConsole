@@ -1,4 +1,5 @@
 using System;
+using System.Dynamic;
 
 public class BackUpJob
 {
@@ -29,4 +30,14 @@ public class BackUpJob
     }
 
     // methods 
+
+    //verify the structure of SourceDirectory and target directory 
+    // detect wether it's an extern disk / windows / mac / linux
+
+// display the informations of a backup job
+    public override string ToString()
+    {
+        return $"Name: {Name}\n- Source Directory: {SourceDirectory} \n- Target Directory: {TargetDirectory} \n- Date Created: {DateCreated}";
+    }
+
 }
