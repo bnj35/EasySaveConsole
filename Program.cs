@@ -33,22 +33,23 @@ class Program
                 case '1':
 
                     Console.WriteLine("Choice 1 selected");
-                    CreateJob(joblist);
+                    createJob(joblist);
 
                     break;
 
                 case '2':
 
-                    joblist.DisplayAllJob();
+                    joblist.displayAllJob();
                     break;
 
                 case '3':
 
                     Console.WriteLine("Choice 3 selected");
+                    runJob(joblist);
                     break;
 
                 case '4':
-                    SearchJob(joblist);
+                    searchJob(joblist);
 
                     break;
 
@@ -91,7 +92,7 @@ class Program
         Console.Write("Your choice:");
     }
 
-    static void CreateJob(JobList joblist)
+    static void createJob(JobList joblist)
     {
         Console.WriteLine("Enter the name");
 
@@ -99,13 +100,11 @@ class Program
 
         Console.WriteLine("Now enter the source directory");
 
-        string SourceDirectory = Console.ReadLine()!;
-
-        Console.WriteLine($"Your source directory is {SourceDirectory}");
+        string SourceDirectory = VerifyPath(Console.ReadLine()!);
 
         Console.WriteLine("Then enter the target directory");
 
-        string TargetDirectory = Console.ReadLine()!;
+        string TargetDirectory = VerifyPath(Console.ReadLine()!);
 
         BackUpJob newJob = new BackUpJob(Name, SourceDirectory, TargetDirectory)
         {
@@ -117,7 +116,7 @@ class Program
         Console.WriteLine($"New backup job created {newJob}");
     }
 
-    static BackUpJob? SearchJob(JobList jobList)
+    static BackUpJob? searchJob(JobList jobList)
 
     {
 
@@ -125,7 +124,7 @@ class Program
 
         string name = Console.ReadLine()!;
 
-        BackUpJob job = jobList.SearchJob(name);
+        BackUpJob job = jobList.searchJob(name);
 
         if (job != null)
 
@@ -147,15 +146,37 @@ class Program
 
     }
 
-    static void RunJob(JobList joblist)
+    static void runJob(JobList joblist)
     {
-        BackUpJob? job = SearchJob(joblist);
+        BackUpJob? job = searchJob(joblist);
 
         if (job != null)
         {
             Console.WriteLine($"job {job.Name} finded ");
+            ActiveJob jobActive = new ActiveJob(job.Name, job.SourceDirectory, job.TargetDirectory);
+            jobActive.runJob();
+
         }
-        // SearchJob
+        // searchJob
+    }
+
+    // verify if a path is correct
+    static string VerifyPath(string path)
+    {
+        string newPath = path ?? "";
+
+        while (true)
+        {
+            if (!string.IsNullOrEmpty(newPath) && Path.IsPathFullyQualified(newPath) && Path.IsPathRooted(newPath))
+            {
+                return Path.GetFullPath(newPath);
+            }
+            else
+            {
+                Console.WriteLine("The path isn't valid, try again :");
+                newPath = Console.ReadLine() ?? "";
+            }
+        }
     }
 
 
