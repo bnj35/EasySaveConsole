@@ -1,150 +1,121 @@
 ﻿using System;
+using static LanguageService;
+
 class Program
 {
     static void Main(string[] args)
     {
-        //list of backup jobs 
+        // language selection
+        Console.WriteLine(T("lang.select"));
+        string lang = Console.ReadLine()?.Trim().ToLower() ?? "en";
+        if (lang != "fr" && lang != "en") lang = "en";
+        LanguageService.Load(lang);
+
+        // list of backup jobs
         JobList joblist = new JobList();
 
         bool exit = false;
 
         while (!exit)
         {
-
-
-
             DisplayMenu();
-
-
 
             ConsoleKeyInfo choice = Console.ReadKey();
 
             Console.Clear();
 
             switch (choice.KeyChar)
-
             {
-
                 case '0':
                     exit = true;
-                    Console.WriteLine("Thank you for using EasySave");
+                    Console.WriteLine(T("job.exit"));
                     break;
 
                 case '1':
-
-                    Console.WriteLine("Choice 1 selected");
+                    Console.WriteLine(T("choice.1"));
                     CreateJob(joblist);
-
                     break;
 
                 case '2':
-
                     joblist.DisplayAllJob();
                     break;
 
                 case '3':
-
-                    Console.WriteLine("Choice 3 selected");
+                    Console.WriteLine(T("choice.3"));
                     break;
 
                 case '4':
                     SearchJob(joblist);
-
                     break;
 
                 default:
-
-                    Console.WriteLine("Invalid choice, please try again.");
-
+                    Console.WriteLine(T("job.invalid"));
                     break;
-
             }
 
-            Console.WriteLine("\nPress any key to continue...");
-
+            Console.WriteLine(T("job.continue"));
             Console.ReadKey();
-
             Console.Clear();
         }
-
     }
-
 
     static void DisplayMenu()
     {
-        Console.WriteLine("====== Welcome in EasySave ========");
-
-        Console.WriteLine("What do you want to do ?");
-
-        Console.WriteLine("1. Create a backup job");
-
-        Console.WriteLine("2. Display all");
-
-        Console.WriteLine("3. Run a backup job");
-
-        Console.WriteLine("4. Search for a backup job");
-
-        Console.WriteLine("0. Press 0 to exit");
-
-        Console.WriteLine("===================================");
-
-        Console.Write("Your choice:");
+        Console.WriteLine(T("menu.title"));
+        Console.WriteLine(T("menu.prompt"));
+        Console.WriteLine(T("menu.create"));
+        Console.WriteLine(T("menu.display"));
+        Console.WriteLine(T("menu.run"));
+        Console.WriteLine(T("menu.search"));
+        Console.WriteLine(T("menu.exit"));
+        Console.WriteLine(T("menu.separator"));
+        Console.Write(T("menu.choice"));
     }
 
     static void CreateJob(JobList joblist)
     {
-        Console.WriteLine("Enter the name");
+        Console.WriteLine(T("create.name"));
 
         string Name = Console.ReadLine()!;
 
-        Console.WriteLine("Now enter the source directory");
+        Console.WriteLine(T("create.source"));
 
         string SourceDirectory = Console.ReadLine()!;
 
-        Console.WriteLine($"Your source directory is {SourceDirectory}");
+        Console.WriteLine(string.Format(T("create.source.confirm"), SourceDirectory));
 
-        Console.WriteLine("Then enter the target directory");
+        Console.WriteLine(T("create.target"));
 
         string TargetDirectory = Console.ReadLine()!;
 
         BackUpJob newJob = new BackUpJob(Name, SourceDirectory, TargetDirectory)
         {
-            DateCreated = DateTime.Now// set the date of creation
+            DateCreated = DateTime.Now // set the date of creation
         };
 
         joblist.AddJob(newJob);
 
-        Console.WriteLine($"New backup job created {newJob}");
+        Console.WriteLine(string.Format(T("create.success"), Name));
     }
 
     static BackUpJob? SearchJob(JobList jobList)
-
     {
-
-        Console.Write("Enter the name of the job to search for:");
+        Console.Write(T("search.prompt"));
 
         string name = Console.ReadLine()!;
 
         BackUpJob job = jobList.SearchJob(name);
 
         if (job != null)
-
         {
-
-            Console.WriteLine(job.Name);
+            Console.WriteLine(string.Format(T("run.found"), job.Name));
             return job;
-
         }
-
         else
-
         {
-
-            Console.WriteLine($"The book '{name}' was not found.");
+            Console.WriteLine(string.Format(T("search.notfound"), name));
             return null;
-
         }
-
     }
 
     static void RunJob(JobList joblist)
@@ -153,10 +124,8 @@ class Program
 
         if (job != null)
         {
-            Console.WriteLine($"job {job.Name} finded ");
+            Console.WriteLine(string.Format(T("run.found"), job.Name));
+            // Here you could call joblist.RunJob(job.Name) to execute
         }
-        // SearchJob
     }
-
-
 }
