@@ -26,6 +26,14 @@ public class ActiveJob : BackUpJob
         Name = name;
         SourceDirectory = sourceDirectory;
         TargetDirectory = targetDirectory;
+
+        TotalFileSize = 0;
+        NumberFiles = 0;
+        AdressesOfSaveFiles = [];
+        DestinationOfSaveFiles = [];
+
+        SizeFileRemaining = TotalFileSize;
+        Progression = 0.0;
     }
 
     // methods 
@@ -43,16 +51,9 @@ public class ActiveJob : BackUpJob
     public void runJob()
     {
         Console.WriteLine("File copy will start...");
-        TotalFileSize = 0;
-        NumberFiles = 0;
-        AdressesOfSaveFiles = [];
-        DestinationOfSaveFiles = [];
-        
         // Calculate total size and count files
         CalculateDirectoryStats(SourceDirectory);
         NumberFileRemaining = (int)NumberFiles;
-        SizeFileRemaining = TotalFileSize;
-        Progression = 0.0;
         
         Console.WriteLine($"Total size before transfer: {TotalFileSize / (1024 * 1024):F2} MB");
         Console.WriteLine($"Number of files: {NumberFiles}");
