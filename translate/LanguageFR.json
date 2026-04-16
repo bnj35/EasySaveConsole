@@ -1,0 +1,36 @@
+
+{
+  "menu.title": "====== Bienvenue dans EasySave ========",
+  "menu.prompt": "Que voulez-vous faire ?",
+  "menu.create": "1. Créer un travail de sauvegarde",
+  "menu.display": "2. Afficher tout",
+  "menu.run": "3. Exécuter un travail de sauvegarde",
+  "menu.search": "4. Rechercher un travail de sauvegarde",
+  "menu.exit": "0. Appuyer sur 0 pour quitter",
+  "menu.separator": "=======================================",
+  "menu.choice": "Votre choix : ",
+
+  "job.exit": "Merci d'avoir utilisé EasySave",
+  "job.invalid": "Choix invalide, veuillez réessayer.",
+  "job.continue": "\\nAppuyez sur une touche pour continuer...",
+
+  "create.name": "Entrez le nom",
+  "create.source": "Entrez maintenant le répertoire source",
+  "create.source.confirm": "Votre répertoire source est {0}",
+  "create.target": "Entrez ensuite le répertoire cible",
+  "create.success": "Nouveau travail de sauvegarde créé : {0}",
+
+  "search.prompt": "Entrez le nom du travail à rechercher : ",
+  "search.notfound": "Le travail '{0}' est introuvable.",
+
+  "run.found": "Travail trouvé : {0}",
+
+  "lang.select": "Choisissez la langue : [en/fr]",
+  "choice.1": "Choix 1 sélectionné",
+  "choice.3": "Choix 3 sélectionné",
+  "display.listTitle": "Travaux de sauvegarde créés depuis le début :",
+  "display.empty": "La liste est vide.",
+  "add.success": "Le travail '{0}' a été créé avec succès.",
+  "run.running": "Travail en cours...",
+  "run.notfound": "Aucun travail trouvé."
+}
