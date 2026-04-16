@@ -181,3 +181,17 @@ class Program
 
 
 }
+
+// I follow these steps
+/*
+- Does the source exist and is valid ?
+- Will I overwrite? => type gestion
+- Should I log the operation ? => antoine 
+- Do I need async?
+- Do I need to show progress? => yes
+- What if the copy fails? => restart 3 times max => Should I implement retries?
+- Are permissions OK?
+- Do I need temp-file atomic writes?
+- Local vs Network drive?
+- Small, medium, or huge files?
+*/
