@@ -428,5 +428,7 @@ FodyWeavers.xsd
 ###############################
 # normal git ignore start here
 ##############################
-
-obj/Debug/
+obj/Debug/*
+obj/Debug/net10.0/EasySaveConsole.AssemblyInfo.cs
+obj/Debug/net10.0/EasySaveConsole.AssemblyInfoInputs.cache
+obj

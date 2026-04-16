@@ -116,7 +116,7 @@
         Console.WriteLine($"New backup job created {newJob}");
     }
 
-    static void SearchJob(JobList jobList)
+    static BackUpJob? SearchJob(JobList jobList)
 
     {
 
@@ -131,6 +131,7 @@
         {
 
             Console.WriteLine(job.Name);
+            return job;
 
         }
 
@@ -139,23 +140,22 @@
         {
 
             Console.WriteLine($"The book '{name}' was not found.");
+            return null;
 
         }
 
     }
 
-    // static void RunJob()
-    // {
-    //     Console.WriteLine("Enter the name of the job you want to run:");
+    static void RunJob(JobList joblist)
+    {
+        BackUpJob? job = SearchJob(joblist);
 
-    //     string name = Console.ReadLine();
-
-    //     // string job = SearchJob();
-
-    //     Console.WriteLine($"the job is {name}");
-
-    //     // SearchJob
-    // }
+        if (job != null)
+        {
+            Console.WriteLine($"job {job.Name} finded ");
+        }
+        // SearchJob
+    }
 
 
 }
