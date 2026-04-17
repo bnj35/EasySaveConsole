@@ -12,7 +12,7 @@
 
   "job.exit": "Merci d'avoir utilisé EasySave",
   "job.invalid": "Choix invalide, veuillez réessayer.",
-  "job.continue": "\\nAppuyez sur une touche pour continuer...",
+  "job.continue": "Appuyez sur une touche pour continuer...",
 
   "create.name": "Entrez le nom",
   "create.source": "Entrez maintenant le répertoire source",
