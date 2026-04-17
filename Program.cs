@@ -6,7 +6,7 @@ class Program
     static void Main(string[] args)
     {
         // language selection
-        Console.WriteLine(T("lang.select"));
+        Console.WriteLine("Choose a language / Choisis une langue: \n'en' for english\n'fr' pour français");
         string lang = Console.ReadLine()?.Trim().ToLower() ?? "en";
         if (lang != "fr" && lang != "en") lang = "en";
         LanguageService.Load(lang);
