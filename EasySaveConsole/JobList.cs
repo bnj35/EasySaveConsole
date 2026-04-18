@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static LanguageService;
 
 public class JobList
 {
@@ -13,17 +14,17 @@ public class JobList
 
         jobs.Add(job);
 
-        Console.WriteLine($"The job '{job.Name}' has been sucessfuly created.");
+        Console.WriteLine(string.Format(T("add.success"), job.Name));
 
     }
 
-    public void DisplayAllJob()
+    public void displayAllJob()
     {
         if (jobs.Count > 0)
 
         {
 
-            Console.WriteLine("Backup jobs created since the start:");
+            Console.WriteLine(T("display.listTitle"));
 
             foreach (var job in jobs)
 
@@ -39,28 +40,28 @@ public class JobList
 
         {
 
-            Console.WriteLine("The list is empty.");
+            Console.WriteLine(T("display.empty"));
 
         }
     }
 
-    public BackUpJob SearchJob(string name)
+    public BackUpJob searchJob(string name)
     {
         return jobs.FirstOrDefault(l => l.Name.Equals(name, StringComparison.OrdinalIgnoreCase))!;
     }
 
     public void RunJob(string name)
     {
-        BackUpJob job = SearchJob(name);
+        BackUpJob job = searchJob(name);
 
         if (job != null)
         {
             // jobs.Run(job);
-            Console.WriteLine("job running");
+            Console.WriteLine(T("run.running"));
         }
         else
         {
-            Console.WriteLine("no job");
+            Console.WriteLine(T("run.notfound"));
         }
     }
 }
