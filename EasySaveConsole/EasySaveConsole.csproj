@@ -15,7 +15,7 @@
 
 	<ItemGroup>
 	  <Reference Include="EasyLog">
-	    <HintPath>..\EasyLog\EasyLog\obj\Debug\net10.0\EasyLog.dll</HintPath>
+	    <HintPath>..\EasyLog\obj\Debug\net10.0\EasyLog.dll</HintPath>
 	  </Reference>
 	</ItemGroup>
 
