@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using static LanguageService;
 
@@ -48,13 +49,17 @@ class Program
                     break;
 
                 case '3':
-                    DisplayAllJobs(vm);
                     Console.WriteLine(T("choice.3"));
                     RunJob(vm);
                     break;
 
                 case '4':
                     SearchJob(vm);
+                    break;
+                
+                case '5':
+                    Console.WriteLine(T("choice.5"));
+                    RunMultipleJob(vm);
                     break;
 
                 default:
@@ -77,6 +82,8 @@ class Program
         Console.WriteLine(T("menu.display"));
         Console.WriteLine(T("menu.run"));
         Console.WriteLine(T("menu.search"));
+        // Option 5: run multiple jobs by index selection (e.g. "1-3" or "1;3")
+        Console.WriteLine(T("menu.runMultiple"));
         Console.WriteLine(T("menu.exit"));
         Console.WriteLine(T("menu.separator"));
         Console.Write(T("menu.choice"));
@@ -144,43 +151,194 @@ class Program
         // Preserve previous behavior: runJob printed the "found" message again
         Console.WriteLine(string.Format(T("run.found"), job.Name));
 
+        // Run the selected job using the shared implementation.
+        RunSingleJob(vm, job);
+    }
+
+    static void RunMultipleJob(MainViewModel vm)
+    {
+        // Multi-run entry point.
+        // This method is intentionally small: it shows the jobs, asks the user for a selection,
+        // then runs each selected job sequentially.
+        //
+        // Supported inputs:
+        // - Range: "1-3" runs jobs 1 through 3
+        // - List:  "1;3" runs jobs 1 and 3
+        // - Single index: "2" runs job 2
+        var jobs = vm.GetAllJobs();
+        if (jobs.Count == 0)
+        {
+            Console.WriteLine(T("display.empty"));
+            return;
+        }
+
+        PrintJobsWithIndices(jobs);
+
+        string input = PromptMultipleJobSelection();
+        if (!TryParseJobSelection(input, out List<int> indices, out string error))
+        {
+            Console.WriteLine(error);
+            return;
+        }
+
+        foreach (int index1Based in indices)
+        {
+            // Indices are 1-based to match what is displayed to the user.
+            BackUpJob? job = vm.GetJobByIndex(index1Based);
+            if (job is null)
+            {
+                Console.WriteLine($"Job #{index1Based} not found.");
+                continue;
+            }
+
+            Console.WriteLine(string.Format(T("run.found"), job.Name));
+            RunSingleJob(vm, job);
+            Console.WriteLine();
+        }
+    }
+
+    static void RunSingleJob(MainViewModel vm, BackUpJob job)
+    {
+        // Shared execution path for running exactly one job.
+        // Used by both single-run (choice 3) and multi-run (choice 5).
         try
         {
-            // Create an ActiveJob (runtime object) and subscribe to its events for UI updates.
             ActiveJob active = vm.CreateActiveJob(job);
-
-            // Event: percentage progress changed.
-            // `+=` means we add a handler to the event
-            // `(_, e) =>` means when the event happens, run this code
-            // `_` is the first parameter we do not use (the sender)
-            // `e` is the event data (EventArgs)
-            active.ProgressChanged += (_, e) =>
-            {
-                Console.WriteLine($"Progress: {e.ProgressPercent:0.0}%");// e will be bewteen 0 and 100 
-            };
-
-            // Event: remaining work changed (files and bytes).
-            // Same syntax: we ignore the sender (`_`) and read values from `e`
-            active.RemainingChanged += (_, e) =>
-            {
-                Console.WriteLine($"Remaining: {e.FilesRemaining} files, {e.BytesRemaining / (1024.0 * 1024.0):0.00} MB");
-            };
-
-            // Event: a file was copied (includes size and timing).
-            // `{ ... }` is the body of the handler
-            active.FileCopied += (_, e) =>
-            {
-                Console.WriteLine($"Copied: {Path.GetFileName(e.SourcePath)} ({e.BytesCopied / (1024.0 * 1024.0):0.00} MB)");
-            };
-
-            // Run the copy.
+            AttachConsoleHandlers(active);
             active.runJob();
         }
         catch (Exception ex)
         {
-            // Show the error (invalid paths or guard triggered)
             Console.WriteLine(ex.Message);
         }
+    }
+
+    static void AttachConsoleHandlers(ActiveJob active)
+    {
+        // Subscribe to ActiveJob events so the console UI prints progress updates.
+        // This keeps the event wiring in one place (avoids duplication).
+        active.ProgressChanged += (_, e) =>
+        {
+            Console.WriteLine($"Progress: {e.ProgressPercent:0.0}%");
+        };
+
+        active.RemainingChanged += (_, e) =>
+        {
+            Console.WriteLine($"Remaining: {e.FilesRemaining} files, {e.BytesRemaining / (1024.0 * 1024.0):0.00} MB");
+        };
+
+        active.FileCopied += (_, e) =>
+        {
+            Console.WriteLine($"Copied: {Path.GetFileName(e.SourcePath)} ({e.BytesCopied / (1024.0 * 1024.0):0.00} MB)");
+        };
+    }
+
+    static void PrintJobsWithIndices(System.Collections.Generic.IReadOnlyList<BackUpJob> jobs)
+    {
+        // Print all jobs with their 1-based index so the user can refer to them.
+        Console.WriteLine(T("display.listTitle"));
+        for (int i = 0; i < jobs.Count; i++)
+        {
+            int index1Based = i + 1;
+            Console.WriteLine($"{index1Based}. {jobs[i].Name} - Created on {jobs[i].DateCreated}");
+        }
+        Console.WriteLine();
+    }
+
+    static string PromptMultipleJobSelection()
+    {
+        // Ask the user which jobs to run.
+        // Examples: "1-3" (range), "1;3" (list), "2" (single)
+        Console.WriteLine("Enter the jobs to run (example: 1-3 or 1;3):");
+        return Console.ReadLine() ?? "";
+    }
+
+    static bool TryParseJobSelection(string input, out List<int> indices, out string error)
+    {
+        // Parse the user selection into a list of 1-based indices.
+        //
+        // Accepted formats:
+        // - "1-3"  => [1, 2, 3]
+        // - "1;3"  => [1, 3]
+        // - "2"    => [2]
+        //
+        // Notes:
+        // - list format is normalized (sorted + duplicates removed)
+        // - range format keeps the natural ascending order
+        indices = new List<int>();
+        error = "";
+
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            error = "No selection provided.";
+            return false;
+        }
+
+        string trimmed = input.Trim();
+
+        // Range format: "1-3"
+        if (trimmed.Contains('-'))
+        {
+            string[] parts = trimmed.Split('-', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length != 2)
+            {
+                error = "Invalid range format. Use: 1-3";
+                return false;
+            }
+
+            if (!int.TryParse(parts[0], out int start) || !int.TryParse(parts[1], out int end))
+            {
+                error = "Invalid range numbers. Use: 1-3";
+                return false;
+            }
+
+            if (start <= 0 || end <= 0 || end < start)
+            {
+                error = "Invalid range. Indices must be positive and end must be >= start.";
+                return false;
+            }
+
+            for (int i = start; i <= end; i++)
+            {
+                indices.Add(i);
+            }
+
+            return true;
+        }
+
+        // List format: "1;3"
+        if (trimmed.Contains(';'))
+        {
+            string[] parts = trimmed.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            foreach (string p in parts)
+            {
+                if (!int.TryParse(p, out int val) || val <= 0)
+                {
+                    error = "Invalid list format. Use: 1;3";
+                    return false;
+                }
+                indices.Add(val);
+            }
+
+            // Remove duplicates and run in ascending order (predictable execution)
+            indices.Sort();
+            for (int i = indices.Count - 1; i > 0; i--)
+            {
+                if (indices[i] == indices[i - 1]) indices.RemoveAt(i);
+            }
+
+            return true;
+        }
+
+        // Single index format: "2"
+        if (!int.TryParse(trimmed, out int single) || single <= 0)
+        {
+            error = "Invalid selection. Use: 1-3 or 1;3";
+            return false;
+        }
+
+        indices.Add(single);
+        return true;
     }
 
     static string VerifyPath(string path)

@@ -32,6 +32,9 @@ public sealed class MainViewModel
     // Search by name and return null if not found
     public BackUpJob? SearchJob(string name) => _jobList.SearchJob(name);
 
+    // Get a job by 1-based index (1 = first job). Returns null if out of range.
+    public BackUpJob? GetJobByIndex(int index1Based) => _jobList.GetByIndex(index1Based);
+
     public ActiveJob CreateActiveJob(BackUpJob job)
     {
         // ActiveJob is the runtime object that performs the copy and emits events
