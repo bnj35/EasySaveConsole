@@ -1,29 +1,38 @@
 ﻿using System;
+using System.IO;
 using static LanguageService;
 
+// Amaury or Jeffrey check if my comments are good pls <= and remove this later
+
+// Console "View" (temporary): handles user input/output.
+// The View delegates business actions to the ViewModel and subscribes to job events.
 class Program
 {
     static void Main(string[] args)
     {
-        // language selection
+        // Language selection happens in the View (console).
+        // `LanguageService.Load` fills the translation dictionary used by `T(key)`
         Console.WriteLine("Choose a language / Choisis une langue: \n'en' for english\n'fr' pour français");
-        string lang = Console.ReadLine()?.Trim().ToLower() ?? "en";
+        string lang = Console.ReadLine()?.Trim().ToLowerInvariant() ?? "en";
         if (lang != "fr" && lang != "en") lang = "en";
         LanguageService.Load(lang);
 
-        // list of backup jobs
-        JobList joblist = new JobList();
+        // Model + ViewModel: the View owns them for the lifetime of the app
+        var jobList = new JobList();
+        var vm = new MainViewModel(jobList);
 
+        // Main loop: keep showing the menu until user chooses exit
         bool exit = false;
 
         while (!exit)
         {
+            // Render the menu, then read one key choice.
             DisplayMenu();
 
             ConsoleKeyInfo choice = Console.ReadKey();
-
             Console.Clear();
 
+            // Dispatch user choice to an action.
             switch (choice.KeyChar)
             {
                 case '0':
@@ -32,26 +41,22 @@ class Program
                     break;
 
                 case '1':
-
-                   Console.WriteLine(T("choice.1"));
-                    createJob(joblist);
-
+                    Console.WriteLine(T("choice.1"));
+                    CreateJob(vm);
                     break;
 
                 case '2':
-
-                    joblist.displayAllJob();
+                    DisplayAllJobs(vm);
                     break;
 
                 case '3':
-
+                    DisplayAllJobs(vm);
                     Console.WriteLine(T("choice.3"));
-                    runJob(joblist);
+                    RunJob(vm);
                     break;
 
                 case '4':
-                    searchJob(joblist);
-
+                    SearchJob(vm);
                     break;
 
                 default:
@@ -67,6 +72,7 @@ class Program
 
     static void DisplayMenu()
     {
+        // UI text is driven by translation keys.
         Console.WriteLine(T("menu.title"));
         Console.WriteLine(T("menu.prompt"));
         Console.WriteLine(T("menu.create"));
@@ -78,97 +84,123 @@ class Program
         Console.Write(T("menu.choice"));
     }
 
-    static void createJob(JobList joblist)
+    static void CreateJob(MainViewModel vm)
     {
+        // Collect job properties from the user, validate paths, then create via the ViewModel.
         Console.WriteLine(T("create.name"));
-
-        string Name = Console.ReadLine()!;
+        string name = Console.ReadLine() ?? "";
 
         Console.WriteLine(T("create.source"));
-
-      string SourceDirectory = VerifyPath(Console.ReadLine()!);
+        string sourceDirectory = VerifyPath(Console.ReadLine() ?? "");
 
         Console.WriteLine(T("create.target"));
+        string targetDirectory = VerifyPath(Console.ReadLine() ?? "");
 
-        string TargetDirectory = VerifyPath(Console.ReadLine()!);
-
-        BackUpJob newJob = new BackUpJob(Name, SourceDirectory, TargetDirectory)
-        {
-            DateCreated = DateTime.Now // set the date of creation
-        };
-
-        joblist.AddJob(newJob);
-
-        Console.WriteLine(string.Format(T("create.success"), Name));
+        // Job creation is in the ViewModel (so the View stays thin).
+        BackUpJob job = vm.CreateJob(name, sourceDirectory, targetDirectory);
+        Console.WriteLine(string.Format(T("add.success"), job.Name));
+        Console.WriteLine(string.Format(T("create.success"), job.Name));
     }
 
-    static BackUpJob? searchJob(JobList jobList)
-
+    static void DisplayAllJobs(MainViewModel vm)
     {
+        // Read jobs from the ViewModel and display them.
+        var jobs = vm.GetAllJobs();
+        if (jobs.Count == 0)
+        {
+            Console.WriteLine(T("display.empty"));
+            return;
+        }
+
+        Console.WriteLine(T("display.listTitle"));
+        foreach (var job in jobs)
+        {
+            Console.WriteLine($"{job.Name} - Created on {job.DateCreated}");
+        }
+    }
+
+    static BackUpJob? SearchJob(MainViewModel vm)
+    {
+        // Search by name (case-insensitive), returns null if not found.
         Console.Write(T("search.prompt"));
+        string name = Console.ReadLine() ?? "";
 
-        string name = Console.ReadLine()!;
-
-        BackUpJob job = jobList.searchJob(name);
-
+        BackUpJob? job = vm.SearchJob(name);
         if (job != null)
         {
             Console.WriteLine(string.Format(T("run.found"), job.Name));
             return job;
         }
-        else
-        {
-            Console.WriteLine(string.Format(T("search.notfound"), name));
-            return null;
-        }
+
+        Console.WriteLine(string.Format(T("search.notfound"), name));
+        return null;
     }
 
-    static void runJob(JobList joblist)
+    static void RunJob(MainViewModel vm)
     {
-        BackUpJob? job = searchJob(joblist);
+        // Select a job first; if not found, we can't run anything.
+        BackUpJob? job = SearchJob(vm);
+        if (job is null) return;
 
-        if (job != null)
+        // Keep the historical behavior: show the "found" message again before running.
+        // Preserve previous behavior: runJob printed the "found" message again
+        Console.WriteLine(string.Format(T("run.found"), job.Name));
+
+        try
         {
-            Console.WriteLine(string.Format(T("run.found"), job.Name));
-            ActiveJob jobActive = new ActiveJob(job.Name, job.SourceDirectory, job.TargetDirectory);
-            jobActive.runJob();
+            // Create an ActiveJob (runtime object) and subscribe to its events for UI updates.
+            ActiveJob active = vm.CreateActiveJob(job);
 
+            // Event: percentage progress changed.
+            // `+=` means we add a handler to the event
+            // `(_, e) =>` means when the event happens, run this code
+            // `_` is the first parameter we do not use (the sender)
+            // `e` is the event data (EventArgs)
+            active.ProgressChanged += (_, e) =>
+            {
+                Console.WriteLine($"Progress: {e.ProgressPercent:0.0}%");// e will be bewteen 0 and 100 
+            };
+
+            // Event: remaining work changed (files and bytes).
+            // Same syntax: we ignore the sender (`_`) and read values from `e`
+            active.RemainingChanged += (_, e) =>
+            {
+                Console.WriteLine($"Remaining: {e.FilesRemaining} files, {e.BytesRemaining / (1024.0 * 1024.0):0.00} MB");
+            };
+
+            // Event: a file was copied (includes size and timing).
+            // `{ ... }` is the body of the handler
+            active.FileCopied += (_, e) =>
+            {
+                Console.WriteLine($"Copied: {Path.GetFileName(e.SourcePath)} ({e.BytesCopied / (1024.0 * 1024.0):0.00} MB)");
+            };
+
+            // Run the copy.
+            active.runJob();
         }
-        // searchJob
+        catch (Exception ex)
+        {
+            // Show the error (invalid paths or guard triggered)
+            Console.WriteLine(ex.Message);
+        }
     }
 
-    // verify if a path is correct
     static string VerifyPath(string path)
     {
-        string newPath = path ?? "";
+        // Loop until the user provides a fully-qualified rooted path
+        string current = path ?? "";
 
         while (true)
         {
-            if (!string.IsNullOrEmpty(newPath) && Path.IsPathFullyQualified(newPath) && Path.IsPathRooted(newPath))
+            if (!string.IsNullOrEmpty(current) && Path.IsPathFullyQualified(current) && Path.IsPathRooted(current))
             {
-                return Path.GetFullPath(newPath);
+                // Normalize: ensures a consistent absolute path string
+                return Path.GetFullPath(current);
             }
-            else
-            {
-                Console.WriteLine("The path isn't valid, try again :");
-                newPath = Console.ReadLine() ?? "";
-            }
+
+            // Ask again if the input path is invalid
+            Console.WriteLine("The path isn't valid, try again :");
+            current = Console.ReadLine() ?? "";
         }
     }
-
-
 }
-
-// I follow these steps
-/*
-- Does the source exist and is valid ?
-- Will I overwrite? => type gestion
-- Should I log the operation ? => antoine 
-- Do I need async?
-- Do I need to show progress? => yes
-- What if the copy fails? => restart 3 times max => Should I implement retries?
-- Are permissions OK?
-- Do I need temp-file atomic writes?
-- Local vs Network drive?
-- Small, medium, or huge files?
-*/
