@@ -2,8 +2,6 @@
 using System.IO;
 using static LanguageService;
 
-// Amaury or Jeffrey check if my comments are good pls <= and remove this later
-
 // Console "View" (temporary): handles user input/output.
 // The View delegates business actions to the ViewModel and subscribes to job events.
 class Program

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+// Amaury or Jeffrey check if my comments are good pls <= and remove this later
 
 // Translation service: loads a JSON dictionary and exposes `T(key)`.
 // Used by the View (Program) to display localized text.
