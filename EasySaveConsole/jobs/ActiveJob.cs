@@ -1,6 +1,8 @@
+using EasyLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
 public class ActiveJob : BackUpJob
 {
 
@@ -18,6 +20,7 @@ public class ActiveJob : BackUpJob
     public List<string>? AdressesOfSaveFiles { get; set; }
     public List<string>? DestinationOfSaveFiles { get; set; }
 
+    private readonly EasyLogger Logger;
 
     public ActiveJob(string name, string sourceDirectory, string targetDirectory) : base(name, sourceDirectory, targetDirectory)
 
@@ -34,6 +37,7 @@ public class ActiveJob : BackUpJob
 
         SizeFileRemaining = TotalFileSize;
         Progression = 0.0;
+        Logger = EasyLogger.GetInstance();
     }
 
     // methods 
@@ -86,8 +90,10 @@ public class ActiveJob : BackUpJob
         
         long totalBytes = new FileInfo(sourceFile).Length;
         long totalRead = 0;
-
         byte[] buffer = new byte[81920];
+
+        // start a timer for the copying duration
+        Stopwatch stopwatch = Stopwatch.StartNew();
 
         using var source = File.OpenRead(sourceFile);
         using var destination = File.Create(destFile);
@@ -101,17 +107,25 @@ public class ActiveJob : BackUpJob
             Progression = (double)(TotalFileSize - SizeFileRemaining + totalRead) / TotalFileSize * 100;
             Console.WriteLine($"Progress: {Progression:0.0}%");
         }
-        
+        // Stop the timer and get the duration in milliseconds
+        stopwatch.Stop();
+        double transferTime = stopwatch.Elapsed.TotalMilliseconds;
+
         AdressesOfSaveFiles?.Add(sourceFile);
         DestinationOfSaveFiles?.Add(destFile);
         SizeFileRemaining -= totalBytes;
         NumberFileRemaining--;
+        Logger.LogFileCopy(Name, sourceFile, destFile, totalBytes, transferTime);
     }
 
 // copy a whole directory
     public void CopyDirectory(string sourceDir, string targetDir)
     {
-        Directory.CreateDirectory(targetDir);
+        if (!Directory.Exists(targetDir))
+        {
+            Directory.CreateDirectory(targetDir);
+            Logger.LogDirectoryCreation(Name, targetDir);
+        }
 
         foreach (string file in Directory.GetFiles(sourceDir))
         {
