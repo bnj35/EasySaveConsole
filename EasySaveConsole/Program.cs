@@ -42,6 +42,11 @@ class Program
 
                 case '1':
                     Console.WriteLine(T("choice.1"));
+                    if (vm.GetAllJobs().Count >= JobList.MaxJobs)
+                    {
+                        Console.WriteLine($"Maximum number of jobs reached ({JobList.MaxJobs}).");
+                        break;
+                    }
                     CreateJob(vm);
                     break;
 
@@ -86,6 +91,12 @@ class Program
 
     static void CreateJob(MainViewModel vm)
     {
+        if (vm.GetAllJobs().Count >= JobList.MaxJobs)
+        {
+            Console.WriteLine($"Maximum number of jobs reached ({JobList.MaxJobs}).");
+            return;
+        }
+
         // Collect job properties from the user, validate paths, then create via the ViewModel.
         Console.WriteLine(T("create.name"));
         string name = Console.ReadLine() ?? "";
@@ -97,9 +108,16 @@ class Program
         string targetDirectory = VerifyPath(Console.ReadLine() ?? "");
 
         // Job creation is in the ViewModel (so the View stays thin).
-        BackUpJob job = vm.CreateJob(name, sourceDirectory, targetDirectory);
-        Console.WriteLine(string.Format(T("add.success"), job.Name));
-        Console.WriteLine(string.Format(T("create.success"), job.Name));
+        try
+        {
+            BackUpJob job = vm.CreateJob(name, sourceDirectory, targetDirectory);
+            Console.WriteLine(string.Format(T("add.success"), job.Name));
+            Console.WriteLine(string.Format(T("create.success"), job.Name));
+        }
+        catch (InvalidOperationException ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
     }
 
     static void DisplayAllJobs(MainViewModel vm)
