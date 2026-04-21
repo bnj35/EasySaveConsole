@@ -109,8 +109,14 @@ class Program
 
     static void DisplayAllJobs(MainViewModel vm)
     {
-        // Read jobs from the ViewModel and display them.
+        // Read jobs from the ViewModel and display them (always with 1-based indices).
         var jobs = vm.GetAllJobs();
+        DisplayAllJobs(jobs);
+    }
+
+    static void DisplayAllJobs(System.Collections.Generic.IReadOnlyList<BackUpJob> jobs)
+    {
+        // Display all jobs with their 1-based index so the user can refer to them.
         if (jobs.Count == 0)
         {
             Console.WriteLine(T("display.empty"));
@@ -118,10 +124,12 @@ class Program
         }
 
         Console.WriteLine(T("display.listTitle"));
-        foreach (var job in jobs)
+        for (int i = 0; i < jobs.Count; i++)
         {
-            Console.WriteLine($"{job.Name} - Created on {job.DateCreated}");
+            int index1Based = i + 1;
+            Console.WriteLine($"{index1Based}. {jobs[i].Name} - Created on {jobs[i].DateCreated}");
         }
+        Console.WriteLine();
     }
 
     static BackUpJob? SearchJob(MainViewModel vm)
@@ -143,11 +151,11 @@ class Program
 
     static void RunJob(MainViewModel vm)
     {
-        // Select a job first; if not found, we can't run anything.
+        // Select a job first; if not found, we can't run anything
         BackUpJob? job = SearchJob(vm);
         if (job is null) return;
 
-        // Keep the historical behavior: show the "found" message again before running.
+        // Keep the historical behavior: show the "found" message again before running
         // Preserve previous behavior: runJob printed the "found" message again
         Console.WriteLine(string.Format(T("run.found"), job.Name));
 
@@ -159,7 +167,7 @@ class Program
     {
         // Multi-run entry point.
         // This method is intentionally small: it shows the jobs, asks the user for a selection,
-        // then runs each selected job sequentially.
+        // then runs each selected job sequentially
         //
         // Supported inputs:
         // - Range: "1-3" runs jobs 1 through 3
@@ -172,7 +180,8 @@ class Program
             return;
         }
 
-        PrintJobsWithIndices(jobs);
+        // Reuse the standard job listing output.
+        DisplayAllJobs(jobs);
 
         string input = PromptMultipleJobSelection();
         if (!TryParseJobSelection(input, out List<int> indices, out string error))
@@ -183,7 +192,7 @@ class Program
 
         foreach (int index1Based in indices)
         {
-            // Indices are 1-based to match what is displayed to the user.
+            // Indices are 1-based to match what is displayed to the user
             BackUpJob? job = vm.GetJobByIndex(index1Based);
             if (job is null)
             {
@@ -199,8 +208,8 @@ class Program
 
     static void RunSingleJob(MainViewModel vm, BackUpJob job)
     {
-        // Shared execution path for running exactly one job.
-        // Used by both single-run (choice 3) and multi-run (choice 5).
+        // Shared execution path for running exactly one job
+        // Used by both single-run (choice 3) and multi-run (choice 5)
         try
         {
             ActiveJob active = vm.CreateActiveJob(job);
@@ -215,8 +224,8 @@ class Program
 
     static void AttachConsoleHandlers(ActiveJob active)
     {
-        // Subscribe to ActiveJob events so the console UI prints progress updates.
-        // This keeps the event wiring in one place (avoids duplication).
+        // Subscribe to ActiveJob events so the console UI prints progress updates
+        // This keeps the event wiring in one place (avoids duplication)
         active.ProgressChanged += (_, e) =>
         {
             Console.WriteLine($"Progress: {e.ProgressPercent:0.0}%");
@@ -233,18 +242,6 @@ class Program
         };
     }
 
-    static void PrintJobsWithIndices(System.Collections.Generic.IReadOnlyList<BackUpJob> jobs)
-    {
-        // Print all jobs with their 1-based index so the user can refer to them.
-        Console.WriteLine(T("display.listTitle"));
-        for (int i = 0; i < jobs.Count; i++)
-        {
-            int index1Based = i + 1;
-            Console.WriteLine($"{index1Based}. {jobs[i].Name} - Created on {jobs[i].DateCreated}");
-        }
-        Console.WriteLine();
-    }
-
     static string PromptMultipleJobSelection()
     {
         // Ask the user which jobs to run.
@@ -255,7 +252,7 @@ class Program
 
     static bool TryParseJobSelection(string input, out List<int> indices, out string error)
     {
-        // Parse the user selection into a list of 1-based indices.
+        // Parse the user selection into a list of 1-based indices
         //
         // Accepted formats:
         // - "1-3"  => [1, 2, 3]
