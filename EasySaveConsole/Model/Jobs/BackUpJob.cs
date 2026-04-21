@@ -2,7 +2,7 @@ using System;
 
 // BackUpJob is the persistent model (data) of a backup configuration
 // ActiveJob inherits from it to reuse the source/target/name fields while running
-public class BackUpJob
+public class BackUpJob : ObservableObject
 {
     // Display name of the job
     public string Name { get; set; }

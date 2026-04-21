@@ -13,15 +13,6 @@ public sealed class CopyEngine
 {
     private readonly EasyLogger _logger;
 
-    // Emitted when percentage progress changes
-    public event EventHandler<CopyProgressChangedEventArgs>? ProgressChanged;
-
-    // Emitted when remaining files/bytes changes
-    public event EventHandler<CopyRemainingChangedEventArgs>? RemainingChanged;
-
-    // Emitted after one file has been copied (includes timing)
-    public event EventHandler<FileCopiedEventArgs>? FileCopied;
-
     public CopyEngine(EasyLogger logger)
     {
         // The engine doesn't own the logger lifecycle; it just uses the provided instance
@@ -34,7 +25,7 @@ public sealed class CopyEngine
         // check the Delegates part of : https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions for why using action
         Action<double>? onProgressPercent = null,
         Action<int, long>? onRemainingChanged = null,
-        Action<FileEntry, string>? onFileCopied = null)
+        Action<FileEntry, string, double>? onFileCopied = null)
     {
         // Validate inputs and plan consistency before doing any filesystem work
         if (plan is null) throw new ArgumentNullException(nameof(plan));
@@ -87,22 +78,19 @@ public sealed class CopyEngine
 
             // Notify remaining work.
             onRemainingChanged?.Invoke(remainingFiles, remainingBytes);
-            RemainingChanged?.Invoke(this, new CopyRemainingChangedEventArgs(remainingFiles, remainingBytes));
 
             // Notify progress as a percentage (guard against division by zero)
             if (plan.TotalBytes > 0)
             {
                 double done = (double)(plan.TotalBytes - remainingBytes) / plan.TotalBytes;
                 onProgressPercent?.Invoke(done * 100.0);
-                ProgressChanged?.Invoke(this, new CopyProgressChangedEventArgs(done * 100.0));
             }
 
             // Log the file transfer.
             _logger.LogFileCopy(jobName, file.SourceFullPath, destFile, file.LengthBytes, transferMs);
 
             // Notify file copied.
-            onFileCopied?.Invoke(file, destFile);
-            FileCopied?.Invoke(this, new FileCopiedEventArgs(file.SourceFullPath, destFile, file.LengthBytes, transferMs));
+            onFileCopied?.Invoke(file, destFile, transferMs);
         }
     }
 

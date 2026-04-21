@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.IO;
 using static LanguageService;
@@ -48,11 +49,6 @@ class Program
                     DisplayAllJobs(vm);
                     break;
 
-                case '3':
-                    Console.WriteLine(T("choice.3"));
-                    RunJob(vm);
-                    break;
-
                 case '4':
                     SearchJob(vm);
                     break;
@@ -80,7 +76,6 @@ class Program
         Console.WriteLine(T("menu.prompt"));
         Console.WriteLine(T("menu.create"));
         Console.WriteLine(T("menu.display"));
-        Console.WriteLine(T("menu.run"));
         Console.WriteLine(T("menu.search"));
         // Option 5: run multiple jobs by index selection (e.g. "1-3" or "1;3")
         Console.WriteLine(T("menu.runMultiple"));
@@ -149,20 +144,6 @@ class Program
         return null;
     }
 
-    static void RunJob(MainViewModel vm)
-    {
-        // Select a job first; if not found, we can't run anything
-        BackUpJob? job = SearchJob(vm);
-        if (job is null) return;
-
-        // Keep the historical behavior: show the "found" message again before running
-        // Preserve previous behavior: runJob printed the "found" message again
-        Console.WriteLine(string.Format(T("run.found"), job.Name));
-
-        // Run the selected job using the shared implementation.
-        RunSingleJob(vm, job);
-    }
-
     static void RunMultipleJob(MainViewModel vm)
     {
         // Multi-run entry point.
@@ -209,7 +190,7 @@ class Program
     static void RunSingleJob(MainViewModel vm, BackUpJob job)
     {
         // Shared execution path for running exactly one job
-        // Used by both single-run (choice 3) and multi-run (choice 5)
+        // Used by multi-run after user selection
         try
         {
             ActiveJob active = vm.CreateActiveJob(job);
@@ -224,21 +205,23 @@ class Program
 
     static void AttachConsoleHandlers(ActiveJob active)
     {
-        // Subscribe to ActiveJob events so the console UI prints progress updates
-        // This keeps the event wiring in one place (avoids duplication)
-        active.ProgressChanged += (_, e) =>
+        // Subscribe to property changes so the console prints progress updates
+        active.PropertyChanged += (_, e) =>
         {
-            Console.WriteLine($"Progress: {e.ProgressPercent:0.0}%");
-        };
+            switch (e.PropertyName)
+            {
+                case nameof(ActiveJob.Progression):
+                    Console.WriteLine($"Progress: {active.Progression:0.0}%");
+                    break;
 
-        active.RemainingChanged += (_, e) =>
-        {
-            Console.WriteLine($"Remaining: {e.FilesRemaining} files, {e.BytesRemaining / (1024.0 * 1024.0):0.00} MB");
-        };
+                case nameof(ActiveJob.NumberFileRemaining):
+                    Console.WriteLine($"Remaining: {active.NumberFileRemaining} files, {active.SizeFileRemaining / (1024.0 * 1024.0):0.00} MB");
+                    break;
 
-        active.FileCopied += (_, e) =>
-        {
-            Console.WriteLine($"Copied: {Path.GetFileName(e.SourcePath)} ({e.BytesCopied / (1024.0 * 1024.0):0.00} MB)");
+                case nameof(ActiveJob.LastCopiedFileName):
+                    Console.WriteLine($"Copied: {active.LastCopiedFileName} ({active.LastCopiedBytes / (1024.0 * 1024.0):0.00} MB)");
+                    break;
+            }
         };
     }
 
