@@ -4,6 +4,8 @@ using System.Linq;
 
 public class JobList
 {
+    public const int MaxJobs = 5;
+
     // In-memory list of jobs created/loaded during this app session.
     private readonly List<BackUpJob> jobs = new();
 
@@ -11,6 +13,12 @@ public class JobList
     {
         // Guard against null jobs.
         if (job is null) throw new ArgumentNullException(nameof(job));
+
+        if (jobs.Count >= MaxJobs)
+        {
+            throw new InvalidOperationException($"Maximum number of jobs reached ({MaxJobs}).");
+        }
+
         jobs.Add(job);
     }
 
