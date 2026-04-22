@@ -19,21 +19,6 @@ public class Joblist
         jobs.Add(job);
     }
 
-    public void AddMultipleJob(IEnumerable<BackupJob> jobs)
-    {
-        if ( jobs == null)
-        {
-            throw new ArgumentNullException(nameof(jobs), LanguageService.T("error.joblist.collection.null"));
-        }
-        else
-        {
-            foreach (BackupJob job in jobs)
-            {
-                AddJob(job);
-            }
-        }
-    }
-
     public IReadOnlyList<BackupJob> GetAllJobs()
     {
         return jobs;
