@@ -1,7 +1,4 @@
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
-using System.IO.Enumeration;
-using System.Reflection.PortableExecutable;
 using EasyLog;
 
 public sealed class CopyEngine
@@ -23,6 +20,7 @@ public sealed class CopyEngine
     public void Execute(
         CopyPlan plan,
         string jobName,
+        bool type,
         Action<double>? OnProgressPercent = null,
         Action<int, int>? OnRemainingChanged = null,
         Action<FileEntry,string,double>? OnFileCopied = null
@@ -62,7 +60,7 @@ public sealed class CopyEngine
                 _logger.LogDirectoryCreation(jobName, destDir);
             }
 
-            double transferMs = CopyFileWithTiming(file.SourceFullPath,destFile);
+            double transferMs = CopyFileWithTiming(file.SourceFullPath,destFile, type);
 
             remainingBytes -= (int)file.LengthBytes;
             remainingFiles--;
@@ -81,7 +79,7 @@ public sealed class CopyEngine
         }
     }
 
-    private static double CopyFileWithTiming(string sourceFile, string destFile)
+    private static double CopyFileWithTiming(string sourceFile, string destFile, bool type)
     {
         var time = Stopwatch.StartNew();
         double elapsedTime = 0.0;
@@ -97,9 +95,15 @@ public sealed class CopyEngine
             BufferSize = bufferSize, 
         };
 
+        bool destinationExists = File.Exists(destFile);
+
+        FileMode destinationMode = type
+            ? (destinationExists ? FileMode.Create : FileMode.CreateNew)
+            : FileMode.Create;
+
         var destOptions = new FileStreamOptions
         {
-            Mode = FileMode.Create, // type decide of this
+            Mode = destinationMode,
             Access = FileAccess.Write,
             Share = FileShare.None,
             Options = FileOptions.SequentialScan,

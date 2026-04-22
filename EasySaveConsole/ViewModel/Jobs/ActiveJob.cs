@@ -109,6 +109,7 @@ public class ActiveJob : BackupJob
     engine.Execute(
         plan,
         Name,
+        Type,
         OnProgressPercent : percent =>
         {
             Progression = percent;
