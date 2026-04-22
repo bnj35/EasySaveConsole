@@ -1,150 +1,138 @@
+using System.Runtime.CompilerServices;
 using EasyLog;
-using System;
-using System.Collections.Generic;
-using System.IO;
 
-// ActiveJob is the runtime "executor" of a backup job
-// It plans the copy, runs the engine, tracks progress, and notifies through properties
-public class ActiveJob : BackUpJob
+public class ActiveJob : BackupJob
 {
     private float _totalFileSize;
-    // Total bytes computed before starting the transfer
+
     public float TotalFileSize
     {
+        
         get => _totalFileSize;
         private set => SetProperty(ref _totalFileSize, value);
     }
 
-    private float _numberFiles;
-    // Total number of files computed before starting the transfer
-    public float NumberFiles
+    private int _numberFiles;
+
+    public int NumberFiles
     {
         get => _numberFiles;
         private set => SetProperty(ref _numberFiles, value);
-    } // number of file in the Source Directory at the beginning
+    }
+
+    private int _numberFilesRemaining;
+
+    public int NumberFilesRemaining
+    {
+        get => _numberFilesRemaining;
+        set => SetProperty(ref _numberFilesRemaining, value);
+    }
 
     private double _progression;
-    // Progress percentage (0..100)
+
     public double Progression
     {
         get => _progression;
         private set => SetProperty(ref _progression, value);
-    } // percentage
-
-    private int _numberFileRemaining;
-    // Remaining file count
-    public int NumberFileRemaining
-    {
-        get => _numberFileRemaining;
-        private set => SetProperty(ref _numberFileRemaining, value);
     }
 
     private float _sizeFileRemaining;
-    // Remaining bytes
+
     public float SizeFileRemaining
     {
         get => _sizeFileRemaining;
         private set => SetProperty(ref _sizeFileRemaining, value);
     }
 
-    private string? _lastCopiedFileName;
-    public string? LastCopiedFileName
+    private string? _lastFileCopied;
+
+    public string? LastFileCopied
     {
-        get => _lastCopiedFileName;
-        private set => SetProperty(ref _lastCopiedFileName, value);
+        get => _lastFileCopied;
+        private set => SetProperty(ref _lastFileCopied, value);
     }
 
-    private long _lastCopiedBytes;
-    public long LastCopiedBytes
+    private int _lastCopiedBytes;
+
+    public int LastCopiedBytes
     {
         get => _lastCopiedBytes;
         private set => SetProperty(ref _lastCopiedBytes, value);
     }
 
-    private double _lastTransferMilliseconds;
-    public double LastTransferMilliseconds
+    private double _lastTransferMs;
+
+    public double LastTransferMs
     {
-        get => _lastTransferMilliseconds;
-        private set => SetProperty(ref _lastTransferMilliseconds, value);
+        get => _lastTransferMs;
+        private set => SetProperty(ref _lastTransferMs, value);
     }
 
-    // Lists of copied paths (useful for reports/debugging)
-    public List<string>? AdressesOfSaveFiles { get; set; }
-    public List<string>? DestinationOfSaveFiles { get; set; }
+    public List<string>? AddressesOfFiles{get; set; }
 
-    // Logger is used by the underlying copy engine
+    public List<string>? DestinationOfFiles {get; set; }
+
     private readonly EasyLogger Logger;
 
-    public ActiveJob(string name, string sourceDirectory, string targetDirectory) : base(name, sourceDirectory, targetDirectory)
-
+    public ActiveJob(string name, string source_dir, string target_dir, bool type, DateTime date) : base(name, source_dir, target_dir, type, date)
     {
-        // Store base job data (duplicated assignments keep legacy style)
-        Name = name;
-        SourceDirectory = sourceDirectory;
-        TargetDirectory = targetDirectory;
-
-        // Initialize execution metrics
         TotalFileSize = 0;
         NumberFiles = 0;
-        AdressesOfSaveFiles = [];
-        DestinationOfSaveFiles = [];
+        AddressesOfFiles = [];
+        DestinationOfFiles = [];
 
         SizeFileRemaining = TotalFileSize;
         Progression = 0.0;
+        
         Logger = EasyLogger.GetInstance();
     }
 
-    public void runJob()
+    public void RunJob()
     {
-        // Entry point: plan then execute copy
-        Console.WriteLine("File copy will start...");
+        Console.WriteLine(string.Format(LanguageService.T("run.running.named"), Name));
 
-        // Safety: prevent infinite loops like source=/data target=/data/backup
-        // Prevent infinite loops like: source=/data, target=/data/backup
-        PathGuard.ThrowIfDestinationInsideSource(SourceDirectory, TargetDirectory);
+        PathGuard.IsLooping(SourceDir, TargetDir);
 
-        // Planning step: enumerate files/directories and compute totals
-        CopyPlan plan = CopyPlanner.Build(SourceDirectory, TargetDirectory);
+        CopyPlan plan = CopyPlanner.Build(SourceDir, TargetDir);
 
-        // Initialize totals and remaining counters from the plan
         TotalFileSize = plan.TotalBytes;
         NumberFiles = plan.TotalFiles;
-        NumberFileRemaining = (int)NumberFiles;
+        NumberFilesRemaining = NumberFiles;
         SizeFileRemaining = TotalFileSize;
 
-        Console.WriteLine($"Total size before transfer: {TotalFileSize / (1024 * 1024):F2} MB");
-        Console.WriteLine($"Number of files: {NumberFiles}");
-        Console.WriteLine();
+    Console.WriteLine(string.Format(LanguageService.T("active.total.size"), TotalFileSize));
+    Console.WriteLine(string.Format(LanguageService.T("active.total.files"), NumberFiles));
+    Console.WriteLine();
 
-        // Execution step: use CopyEngine to create directories and copy files
-        var engine = new CopyEngine(Logger);
+    CopyEngine engine = new CopyEngine(Logger);
 
-        // Run the copy according to the plan
-        engine.Execute(
-            plan,
-            jobName: Name,
-            onProgressPercent: percent =>
-            {
-                Progression = percent;
-            },
-            onRemainingChanged: (filesRemaining, bytesRemaining) =>
-            {
-                NumberFileRemaining = filesRemaining;
-                SizeFileRemaining = bytesRemaining;
-            },
-            onFileCopied: (file, destinationPath, transferMs) =>
-            {
-                AdressesOfSaveFiles?.Add(file.SourceFullPath);
-                DestinationOfSaveFiles?.Add(destinationPath);
+    engine.Execute(
+        plan,
+        Name,
+        OnProgressPercent : percent =>
+        {
+            Progression = percent;
+        },
+        OnRemainingChanged : (filesRemaining, bytesRemaining) =>
+        {
+            NumberFilesRemaining = filesRemaining;
+            SizeFileRemaining = (float)bytesRemaining;
+        },
+        OnFileCopied: (file, destinationPath, transferMs) =>
+        {
+            AddressesOfFiles?.Add(file.SourceFullPath);
+            DestinationOfFiles?.Add(destinationPath);
 
-                LastCopiedFileName = Path.GetFileName(destinationPath);
-                LastCopiedBytes = file.LengthBytes;
-                LastTransferMilliseconds = transferMs;
-            });
+            LastFileCopied = Path.GetFileName(destinationPath);
+            LastCopiedBytes = (int)file.LengthBytes;
+            LastTransferMs = transferMs;
+        }
+    );
 
-        // Summary after completion
-        Console.WriteLine();
-        long totalCopied = plan.TotalBytes - (long)SizeFileRemaining;
-        Console.WriteLine($"Total size after transfer: {totalCopied / (1024 * 1024):F2} MB");
+    Console.WriteLine();
+    float totalCopied = plan.TotalBytes - SizeFileRemaining;
+    Console.WriteLine(string.Format(LanguageService.T("active.total.copied"), totalCopied));
+
     }
+
 }

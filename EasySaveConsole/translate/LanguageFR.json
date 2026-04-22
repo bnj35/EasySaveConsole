@@ -1,38 +1,154 @@
-
 {
-  "menu.title": "====== Bienvenue dans EasySave ========",
-  "menu.prompt": "Que voulez-vous faire ?",
-  "menu.create": "1. Créer un travail de sauvegarde",
-  "menu.display": "2. Afficher tout",
-  "menu.run": "3. Exécuter un travail de sauvegarde",
-  "menu.search": "4. Rechercher un travail de sauvegarde",
-  "menu.runMultiple": "5. Exécuter plusieurs travaux de sauvegarde",
-  "menu.exit": "0. Appuyer sur 0 pour quitter",
-  "menu.separator": "=======================================",
-  "menu.choice": "Votre choix : ",
-
-  "job.exit": "Merci d'avoir utilisé EasySave",
-  "job.invalid": "Choix invalide, veuillez réessayer.",
-  "job.continue": "Appuyez sur une touche pour continuer...",
-
-  "create.name": "Entrez le nom",
-  "create.source": "Entrez maintenant le répertoire source",
-  "create.source.confirm": "Votre répertoire source est {0}",
-  "create.target": "Entrez ensuite le répertoire cible",
-  "create.success": "Nouveau travail de sauvegarde créé : {0}",
-
-  "search.prompt": "Entrez le nom du travail à rechercher : ",
-  "search.notfound": "Le travail '{0}' est introuvable.",
-
-  "run.found": "Travail trouvé : {0}",
-
-  "lang.select": "Choisissez la langue : [en/fr]",
-  "choice.1": "Choix 1 sélectionné",
-  "choice.3": "Choix 3 sélectionné",
-  "choice.5": "Choix 5 sélectionné",
-  "display.listTitle": "Travaux de sauvegarde créés depuis le début :",
-  "display.empty": "La liste est vide.",
-  "add.success": "Le travail '{0}' a été créé avec succès.",
-  "run.running": "Travail en cours...",
-  "run.notfound": "Aucun travail trouvé."
+  "menu": {
+    "title": "====== Bienvenue dans EasySave ========",
+    "prompt": "Que voulez-vous faire ?",
+    "create": "1. Créer un travail de sauvegarde",
+    "display": "2. Afficher tout",
+    "run": "3. Exécuter un travail de sauvegarde",
+    "search": "4. Rechercher un travail de sauvegarde",
+    "runMultiple": "5. Exécuter plusieurs travaux de sauvegarde",
+    "exit": "0. Appuyer sur 0 pour quitter",
+    "separator": "=======================================",
+    "choice": "Votre choix : "
+  },
+  "job": {
+    "exit": "Merci d'avoir utilisé EasySave",
+    "invalid": "Choix invalide, veuillez réessayer.",
+    "continue": "Appuyez sur une touche pour continuer...",
+    "max": {
+      "reached": "Nombre maximal de travaux atteint ({0})."
+    }
+  },
+  "create": {
+    "name": "Entrez le nom",
+    "source": "Entrez maintenant le répertoire source",
+    "target": "Entrez ensuite le répertoire cible",
+    "success": "Nouveau travail de sauvegarde créé : {0}",
+    "type": "Type de sauvegarde: [I]ncrémentale / [O]complète",
+    "source.confirm": "Votre répertoire source est {0}",
+    "type.invalid": "Type invalide, incrémentale sélectionnée par défaut."
+  },
+  "search": {
+    "prompt": "Entrez le nom du travail à rechercher : ",
+    "notfound": "Le travail '{0}' est introuvable."
+  },
+  "run": {
+    "found": "Travail trouvé : {0}",
+    "running": "Travail en cours...",
+    "notfound": "Aucun travail trouvé.",
+    "running.named": "Exécution du travail : {0}",
+    "finished.named": "Travail terminé : {0}",
+    "index.notfound": "Aucun travail trouvé à l'index {0}.",
+    "multiple.input": "Entrez les index à exécuter (ex: 1-3, 1;3;5 ou 2) :"
+  },
+  "lang": {
+    "select": "Choisissez la langue : [en/fr]"
+  },
+  "choice": {
+    "1": "Choix 1 sélectionné",
+    "3": "Choix 3 sélectionné",
+    "5": "Choix 5 sélectionné"
+  },
+  "display": {
+    "listTitle": "Travaux de sauvegarde créés depuis le début :",
+    "empty": "La liste est vide.",
+    "item": "{0}. {1} - Créé le {2}"
+  },
+  "add": {
+    "success": "Le travail '{0}' a été créé avec succès."
+  },
+  "validation": {
+    "path": {
+      "invalid": "Le chemin n'est pas valide, réessayez :"
+    }
+  },
+  "selection": {
+    "empty": "Sélection vide.",
+    "range": {
+      "format": "Format de plage invalide. Exemple attendu: 1-3",
+      "number": "La plage doit contenir des nombres valides.",
+      "order": "La plage est invalide (bornes inversées ou <= 0)."
+    },
+    "list": {
+      "number": "La liste doit contenir des entiers > 0."
+    },
+    "single": {
+      "number": "La valeur doit être un entier > 0."
+    }
+  },
+  "active": {
+    "progress": "Progression: {0:F1}%",
+    "remaining": {
+      "files": "Fichiers restants: {0}"
+    },
+    "last": {
+      "file": "Dernier fichier copié: {0}"
+    },
+    "total": {
+      "size": "Taille totale: {0} octets",
+      "files": "Nombre de fichiers: {0}",
+      "copied": "Total copié: {0} octets"
+    }
+  },
+  "error": {
+    "lang": {
+      "file": {
+        "notfound": "Fichier de langue introuvable: {0}"
+      }
+    },
+    "copyengine": {
+      "logger": {
+        "null": "Le logger ne peut pas être nul."
+      },
+      "arguments": {
+        "null": "Le plan et le nom du job sont obligatoires."
+      }
+    },
+    "copyplanner": {
+      "source": {
+        "parent": "Impossible de déterminer le dossier parent de la source."
+      }
+    },
+    "copyplan": {
+      "source": {
+        "empty": "La source ne peut pas être vide."
+      },
+      "target": {
+        "empty": "La destination ne peut pas être vide."
+      }
+    },
+    "path": {
+      "notfound": "Chemin introuvable: {0}"
+    },
+    "pathguard": {
+      "both": {
+        "empty": "Les chemins source et cible sont vides."
+      },
+      "same": {
+        "path": "La source et la destination ne peuvent pas être identiques."
+      },
+      "sub": {
+        "path": "La destination ne peut pas être un sous-dossier de la source."
+      }
+    },
+    "viewmodel": {
+      "joblist": {
+        "null": "La liste des jobs ne peut pas être nulle."
+      },
+      "job": {
+        "null": "Le job ne peut pas être nul."
+      }
+    },
+    "joblist": {
+      "job": {
+        "null": "Le job à ajouter ne peut pas être nul."
+      },
+      "max": {
+        "reached": "La limite de jobs est atteinte ({0})."
+      },
+      "collection": {
+        "null": "La collection de jobs ne peut pas être nulle."
+      }
+    }
+  }
 }

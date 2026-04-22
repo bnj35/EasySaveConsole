@@ -1,44 +1,50 @@
-using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 
-// ViewModel: exposes app operations to the View (console now, GUI later)
-// It keeps UI concerns out of the Model and centralizes orchestration
 public sealed class MainViewModel
 {
-    private readonly JobList _jobList;
+    private readonly Joblist _jobList;
 
-    public MainViewModel(JobList jobList)
+    public MainViewModel(Joblist jobList)
     {
-        // The ViewModel needs a JobList to store/manage jobs
-        _jobList = jobList ?? throw new ArgumentNullException(nameof(jobList)); // ?? if not null return it if null return the right value
-    }
-
-    public BackUpJob CreateJob(string name, string sourceDirectory, string targetDirectory)
-    {
-        // Create a job with user-provided properties, and stamp the creation date
-        var newJob = new BackUpJob(name, sourceDirectory, targetDirectory)
+        if (jobList == null)
         {
-            DateCreated = DateTime.Now,
-        };
-
-        // Persist in memory via the JobList
-        _jobList.AddJob(newJob);
-        return newJob;
+        throw new ArgumentNullException(nameof(jobList), LanguageService.T("error.viewmodel.joblist.null"));
+        }
+        else
+        {
+            _jobList = jobList;
+        }
     }
 
-    // Return all jobs as read-only data for the View
-    public IReadOnlyList<BackUpJob> GetAllJobs() => _jobList.GetAllJobs();
-
-    // Search by name and return null if not found
-    public BackUpJob? SearchJob(string name) => _jobList.SearchJob(name);
-
-    // Get a job by 1-based index (1 = first job). Returns null if out of range
-    public BackUpJob? GetJobByIndex(int index1Based) => _jobList.GetByIndex(index1Based);
-
-    public ActiveJob CreateActiveJob(BackUpJob job)
+    public BackupJob CreateJob(string name, string source_dir, string target_dir, bool type)
     {
-        // ActiveJob is the runtime object that performs the copy and exposes progress properties
-        if (job is null) throw new ArgumentNullException(nameof(job));
-        return new ActiveJob(job.Name, job.SourceDirectory, job.TargetDirectory);
+        BackupJob newjob = new BackupJob(name, source_dir, target_dir, type, DateTime.Now);
+
+        _jobList.AddJob(newjob);
+
+        return newjob;
     }
+
+    public IReadOnlyList<BackupJob> GetAllJobs()
+    {
+        return _jobList.GetAllJobs();
+    }
+    public BackupJob? SearchJob(string name)
+    {
+        return _jobList.SearchJob(name);
+    }
+    public BackupJob? GetJobByIndex(int index)
+    {
+        return _jobList.GetByIndex(index);
+    }
+    public ActiveJob CreateActiveJob(BackupJob job)
+    {
+        if(job == null)
+        {
+            throw new ArgumentNullException(nameof(job), LanguageService.T("error.viewmodel.job.null"));
+        }
+        return new ActiveJob(job.Name,job.SourceDir,job.TargetDir,job.Type,job.DateCreated);
+    }
+
+
 }
