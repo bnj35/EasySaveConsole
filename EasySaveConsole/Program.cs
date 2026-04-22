@@ -59,7 +59,7 @@ class Program
                     break;
                 
                 case '4':
-                    Console.WriteLine(T("choice.5"));
+                    Console.WriteLine(T("choice.4"));
                     RunMultipleJob(vm);
                     break;
 

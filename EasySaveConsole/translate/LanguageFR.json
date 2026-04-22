@@ -5,7 +5,6 @@
     "prompt": "Que voulez-vous faire ?",
     "create": "1. Créer un travail de sauvegarde",
     "display": "2. Afficher tout",
-    "run": "3. Exécuter un travail de sauvegarde",
     "search": "3. Rechercher un travail de sauvegarde",
     "runMultiple": "4. Exécuter plusieurs travaux de sauvegarde",
     "exit": "0. Appuyer sur 0 pour quitter",
@@ -37,7 +36,7 @@
   "lang.select": "Choisissez la langue : [en/fr]",
   "choice.1": "Choix 1 sélectionné",
   "choice.3": "Choix 3 sélectionné",
-  "choice.5": "Choix 5 sélectionné",
+  "choice.5": "Choix 4 sélectionné",
   "display.listTitle": "Travaux de sauvegarde créés depuis le début :",
   "display.empty": "La liste est vide.",
   "add.success": "Le travail '{0}' a été créé avec succès."
