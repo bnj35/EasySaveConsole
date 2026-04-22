@@ -1,42 +1,25 @@
-using System;
-
-// BackUpJob is the persistent model (data) of a backup configuration
-// ActiveJob inherits from it to reuse the source/target/name fields while running
-public class BackUpJob : ObservableObject
+public class BackupJob : ObservableObject
 {
-    // Display name of the job
-    public string Name { get; set; }
+    public string Name {get; set;}
 
-    // Source and target directories for the copy
-    public string SourceDirectory { get; set; }
-    public string TargetDirectory { get; set; }
+    public string SourceDir {get; set;}
 
-    // Runtime flags / options (will be expanded later)
-    public bool IsRunning { get; set; } = false;
-    public bool Type { get; set; } = true; //true = differential backup / false = full backup
+    public string TargetDir {get; set;}
 
-    // Dates used for history / UI
+    public bool IsRunning {get; set; } = true;
+
+    public bool Type {get; set;} = true;
+
     public DateTime DateCreated {get; set;}
+    public DateTime? DateStart {get; set;}
+    public DateTime? DateEnd {get; set;}
 
-    public DateTime? DateStart { get; set; } // start of the job can be null
-
-    public DateTime? DateEnd { get; set; } // end of the job can be null
-
-
-    public BackUpJob(string name, string sourceDirectory, string targetDirectory)
-
+    public BackupJob (string name, string source_dir, string target_dir, bool type,DateTime date_created)
     {
-        // Minimal constructor: store the core job settings
         Name = name;
-        SourceDirectory = sourceDirectory;
-        TargetDirectory = targetDirectory;
-
+        SourceDir = source_dir;
+        TargetDir = target_dir;
+        Type = type;
+        DateCreated = date_created;
     }
-
-    public override string ToString()
-    {
-        // Useful for debugging / quick console display
-        return $"Name: {Name}\n- Source Directory: {SourceDirectory} \n- Target Directory: {TargetDirectory} \n- Date Created: {DateCreated}";
-    }
-
 }

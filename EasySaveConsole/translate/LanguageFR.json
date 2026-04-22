@@ -1,6 +1,5 @@
-
 {
-  "menu":{
+  "menu": {
     "title": "====== Bienvenue dans EasySave ========",
     "prompt": "Que voulez-vous faire ?",
     "create": "1. Créer un travail de sauvegarde",
@@ -15,14 +14,19 @@
   "job": {
     "exit": "Merci d'avoir utilisé EasySave",
     "invalid": "Choix invalide, veuillez réessayer.",
-    "continue": "Appuyez sur une touche pour continuer..."
+    "continue": "Appuyez sur une touche pour continuer...",
+    "max": {
+      "reached": "Nombre maximal de travaux atteint ({0})."
+    }
   },
   "create": {
     "name": "Entrez le nom",
     "source": "Entrez maintenant le répertoire source",
-    "source.confirm": "Votre répertoire source est {0}",
     "target": "Entrez ensuite le répertoire cible",
-    "success": "Nouveau travail de sauvegarde créé : {0}"
+    "success": "Nouveau travail de sauvegarde créé : {0}",
+    "type": "Type de sauvegarde: [I]ncrémentale / [O]complète",
+    "source.confirm": "Votre répertoire source est {0}",
+    "type.invalid": "Type invalide, incrémentale sélectionnée par défaut."
   },
   "search": {
     "prompt": "Entrez le nom du travail à rechercher : ",
@@ -31,15 +35,120 @@
   "run": {
     "found": "Travail trouvé : {0}",
     "running": "Travail en cours...",
-    "notfound": "Aucun travail trouvé."
+    "notfound": "Aucun travail trouvé.",
+    "running.named": "Exécution du travail : {0}",
+    "finished.named": "Travail terminé : {0}",
+    "index.notfound": "Aucun travail trouvé à l'index {0}.",
+    "multiple.input": "Entrez les index à exécuter (ex: 1-3, 1;3;5 ou 2) :"
   },
-
-  "lang.select": "Choisissez la langue : [en/fr]",
-  "choice.1": "Choix 1 sélectionné",
-  "choice.3": "Choix 3 sélectionné",
-  "choice.5": "Choix 5 sélectionné",
-  "display.listTitle": "Travaux de sauvegarde créés depuis le début :",
-  "display.empty": "La liste est vide.",
-  "add.success": "Le travail '{0}' a été créé avec succès."
-
+  "lang": {
+    "select": "Choisissez la langue : [en/fr]"
+  },
+  "choice": {
+    "1": "Choix 1 sélectionné",
+    "3": "Choix 3 sélectionné",
+    "5": "Choix 5 sélectionné"
+  },
+  "display": {
+    "listTitle": "Travaux de sauvegarde créés depuis le début :",
+    "empty": "La liste est vide.",
+    "item": "{0}. {1} - Créé le {2}"
+  },
+  "add": {
+    "success": "Le travail '{0}' a été créé avec succès."
+  },
+  "validation": {
+    "path": {
+      "invalid": "Le chemin n'est pas valide, réessayez :"
+    }
+  },
+  "selection": {
+    "empty": "Sélection vide.",
+    "range": {
+      "format": "Format de plage invalide. Exemple attendu: 1-3",
+      "number": "La plage doit contenir des nombres valides.",
+      "order": "La plage est invalide (bornes inversées ou <= 0)."
+    },
+    "list": {
+      "number": "La liste doit contenir des entiers > 0."
+    },
+    "single": {
+      "number": "La valeur doit être un entier > 0."
+    }
+  },
+  "active": {
+    "progress": "Progression: {0:F1}%",
+    "remaining": {
+      "files": "Fichiers restants: {0}"
+    },
+    "last": {
+      "file": "Dernier fichier copié: {0}"
+    },
+    "total": {
+      "size": "Taille totale: {0} octets",
+      "files": "Nombre de fichiers: {0}",
+      "copied": "Total copié: {0} octets"
+    }
+  },
+  "error": {
+    "lang": {
+      "file": {
+        "notfound": "Fichier de langue introuvable: {0}"
+      }
+    },
+    "copyengine": {
+      "logger": {
+        "null": "Le logger ne peut pas être nul."
+      },
+      "arguments": {
+        "null": "Le plan et le nom du job sont obligatoires."
+      }
+    },
+    "copyplanner": {
+      "source": {
+        "parent": "Impossible de déterminer le dossier parent de la source."
+      }
+    },
+    "copyplan": {
+      "source": {
+        "empty": "La source ne peut pas être vide."
+      },
+      "target": {
+        "empty": "La destination ne peut pas être vide."
+      }
+    },
+    "path": {
+      "notfound": "Chemin introuvable: {0}"
+    },
+    "pathguard": {
+      "both": {
+        "empty": "Les chemins source et cible sont vides."
+      },
+      "same": {
+        "path": "La source et la destination ne peuvent pas être identiques."
+      },
+      "sub": {
+        "path": "La destination ne peut pas être un sous-dossier de la source."
+      }
+    },
+    "viewmodel": {
+      "joblist": {
+        "null": "La liste des jobs ne peut pas être nulle."
+      },
+      "job": {
+        "null": "Le job ne peut pas être nul."
+      }
+    },
+    "joblist": {
+      "job": {
+        "null": "Le job à ajouter ne peut pas être nul."
+      },
+      "max": {
+        "reached": "La limite de jobs est atteinte ({0})."
+      },
+      "collection": {
+        "null": "La collection de jobs ne peut pas être nulle."
+      }
+    }
+  }
 }
