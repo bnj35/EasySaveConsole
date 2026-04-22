@@ -6,8 +6,8 @@
     "create": "1. Créer un travail de sauvegarde",
     "display": "2. Afficher tout",
     "run": "3. Exécuter un travail de sauvegarde",
-    "search": "4. Rechercher un travail de sauvegarde",
-    "runMultiple": "5. Exécuter plusieurs travaux de sauvegarde",
+    "search": "3. Rechercher un travail de sauvegarde",
+    "runMultiple": "4. Exécuter plusieurs travaux de sauvegarde",
     "exit": "0. Appuyer sur 0 pour quitter",
     "separator": "=======================================",
     "choice": "Votre choix : "

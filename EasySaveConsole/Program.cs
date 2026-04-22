@@ -54,11 +54,11 @@ class Program
                     DisplayAllJobs(vm);
                     break;
 
-                case '4':
+                case '3':
                     SearchJob(vm);
                     break;
                 
-                case '5':
+                case '4':
                     Console.WriteLine(T("choice.5"));
                     RunMultipleJob(vm);
                     break;
