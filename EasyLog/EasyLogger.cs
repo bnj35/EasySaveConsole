@@ -1,28 +1,25 @@
-﻿
-using System.Text.Json;
-
-namespace EasyLog
+﻿namespace EasyLog
 {
     public class EasyLogger
     {
         private static EasyLogger? _instance;
-        private readonly string logDirectory;
+        private readonly ILogWriter writer;
 
-        private EasyLogger(string logDirectory)
+        private EasyLogger(ILogWriter writer)
         {
-            this.logDirectory = logDirectory;
-            Directory.CreateDirectory(logDirectory);
+            this.writer = writer;
         }
 
         /// <summary>
         /// Returns the unique instance of the logger.
         /// Creates it if it doesn't exist yet.
         /// </summary>
-        public static EasyLogger GetInstance(string logDirectory = "log")
+        public static EasyLogger GetInstance(string logDirectory = Configuration.DEFAULT_DIRECTORY)
         {
             if (_instance == null)
             {
-                _instance = new EasyLogger(logDirectory);
+                ILogWriter writer = new FileLogWriter(logDirectory);
+                _instance = new EasyLogger(writer);
             }
             return _instance;
         }
@@ -32,16 +29,16 @@ namespace EasyLog
         /// </summary>
         public void LogFileCopy(string backupName, string sourcePath, string destinationPath, long fileSize, double transferTime)
         {
-            var entry = new FileLogEntry(
-                LogActions.FILE_COPY,
+            FileLogEntry entry = new FileLogEntry(
+                Configuration.FILE_COPY,
                 backupName,
-                DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"),
+                DateTime.Now.ToString(Configuration.DATE_FORMAT),
                 sourcePath,
                 destinationPath,
                 fileSize,
                 transferTime
             );
-            WriteLog(entry);
+            writer.Write(entry);
         }
 
         /// <summary>
@@ -49,28 +46,13 @@ namespace EasyLog
         /// </summary>
         public void LogDirectoryCreation(string backupName, string targetPath)
         {
-            var entry = new DirectoryLogEntry(
-                LogActions.DIRECTORY_CREATION,
+            DirectoryLogEntry entry = new DirectoryLogEntry(
+                Configuration.DIRECTORY_CREATION,
                 backupName,
-                DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"),
+                DateTime.Now.ToString(Configuration.DATE_FORMAT),
                 targetPath
             );
-            WriteLog(entry);
-        }
-
-        /// <summary>
-        /// Writes a log entry to the daily log file.
-        /// Each entry is written on its own line (JSON Lines format).
-        /// </summary>
-        private void WriteLog(LogEntry entry)
-        {
-            string fileName = $"{DateTime.Now:yyyy-MM-dd}.jsonl";
-            string fullPath = Path.Combine(logDirectory, fileName);
-
-            var options = new JsonSerializerOptions { WriteIndented = false };
-            string json = JsonSerializer.Serialize(entry, entry.GetType(), options);
-            File.AppendAllText(fullPath, json + Environment.NewLine);
+            writer.Write(entry);
         }
     }
 }
-

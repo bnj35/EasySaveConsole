@@ -1,36 +1,43 @@
 
 {
-  "menu.title": "====== Welcome in EasySave ========",
-  "menu.prompt": "What do you want to do ?",
-  "menu.create": "1. Create a backup job",
-  "menu.display": "2. Display all",
-  "menu.run": "3. Run a backup job",
-  "menu.search": "4. Search for a backup job",
-  "menu.exit": "0. Press 0 to exit",
-  "menu.separator": "===================================",
-  "menu.choice": "Your choice: ",
-
-  "job.exit": "Thank you for using EasySave",
-  "job.invalid": "Invalid choice, please try again.",
-  "job.continue": "\\nPress any key to continue...",
-
-  "create.name": "Enter the name",
-  "create.source": "Now enter the source directory",
-  "create.source.confirm": "Your source directory is {0}",
-  "create.target": "Then enter the target directory",
-  "create.success": "New backup job created: {0}",
-
-  "search.prompt": "Enter the name of the job to search for: ",
-  "search.notfound": "The job '{0}' was not found.",
-
-  "run.found": "Job found: {0}",
-
+  "menu": {
+    "title": "====== Welcome in EasySave ========",
+    "prompt": "What do you want to do ?",
+    "create": "1. Create a backup job",
+    "display": "2. Display all",
+    "run": "3. Run a backup job",
+    "search": "4. Search for a backup job",
+    "runMultiple": "5. Run multiple backup jobs",
+    "exit": "0. Press 0 to exit",
+    "separator": "===================================",
+    "choice": "Your choice: "
+  },
+  "job": {
+    "exit": "Thank you for using EasySave",
+    "invalid": "Invalid choice, please try again.",
+    "continue": "Press any key to continue..."
+  },
+  "create": {
+    "name": "Enter the name",
+    "source": "Now enter the source directory",
+    "source.confirm": "Your source directory is {0}",
+    "target": "Then enter the target directory",
+    "success": "New backup job created: {0}"
+  },
+  "search": {
+    "prompt": "Enter the name of the job to search for: ",
+    "notfound": "The job '{0}' was not found."
+  },
+  "run": {
+    "found": "Job found: {0}",
+    "running": "Job is running...",
+    "notfound": "No job found."
+  },
   "lang.select": "Choose language: [en/fr]",
   "choice.1": "Choice 1 selected",
   "choice.3": "Choice 3 selected",
+  "choice.5": "Choice 5 selected",
   "display.listTitle": "Backup jobs created since the start:",
   "display.empty": "The list is empty.",
-  "add.success": "The job '{0}' has been successfully created.",
-  "run.running": "Job is running...",
-  "run.notfound": "No job found."
+  "add.success": "The job '{0}' has been successfully created."
 }
