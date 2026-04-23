@@ -4,9 +4,8 @@
     "prompt": "Que voulez-vous faire ?",
     "create": "1. Créer un travail de sauvegarde",
     "display": "2. Afficher tout",
-    "run": "3. Exécuter un travail de sauvegarde",
-    "search": "4. Rechercher un travail de sauvegarde",
-    "runMultiple": "5. Exécuter plusieurs travaux de sauvegarde",
+    "search": "3. Rechercher un travail de sauvegarde",
+    "runMultiple": "4. Exécuter plusieurs travaux de sauvegarde",
     "exit": "0. Appuyer sur 0 pour quitter",
     "separator": "=======================================",
     "choice": "Votre choix : "
@@ -47,7 +46,7 @@
   "choice": {
     "1": "Choix 1 sélectionné",
     "3": "Choix 3 sélectionné",
-    "5": "Choix 5 sélectionné"
+    "4": "Choix 4 sélectionné"
   },
   "display": {
     "listTitle": "Travaux de sauvegarde créés depuis le début :",

@@ -4,9 +4,8 @@
     "prompt": "What do you want to do ?",
     "create": "1. Create a backup job",
     "display": "2. Display all",
-    "run": "3. Run a backup job",
-    "search": "4. Search for a backup job",
-    "runMultiple": "5. Run multiple backup jobs",
+    "search": "3. Search for a backup job",
+    "runMultiple": "4. Run multiple backup jobs",
     "exit": "0. Press 0 to exit",
     "separator": "===================================",
     "choice": "Your choice: "
@@ -47,7 +46,7 @@
   "choice": {
     "1": "Choice 1 selected",
     "3": "Choice 3 selected",
-    "5": "Choice 5 selected"
+    "4": "Choice 4 selected"
   },
   "display": {
     "listTitle": "Backup jobs created since the start:",

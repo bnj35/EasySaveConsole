@@ -47,12 +47,12 @@
                     DisplayAllJobs(vm);
                     break;
 
-                case '4':
+                case '3':
                     SearchJob(vm);
                     break;
-
-                case '5':
-                    Console.WriteLine(LanguageService.T("choice.5"));
+                
+                case '4':
+                    Console.WriteLine(T("choice.4"));
                     RunMultipleJob(vm);
                     break;
 
