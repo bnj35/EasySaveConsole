@@ -1,11 +1,15 @@
-using System;
+public sealed class FileEntry
+{
+    public string SourceFullPath { get; set; }
+    public string RelativePath { get; set; }
+    public long LengthBytes { get; set; }
+    public DateTime LastWriteTimeUtc { get; set; }
 
-// FileEntry is a small immutable value type describing one file to copy
-// RelativePath is used to rebuild the same folder structure under the target root
-// struct used bc it's lighter than a class
-public readonly record struct FileEntry(
-    string SourceFullPath,
-    string RelativePath,
-    long LengthBytes,
-    DateTime LastWriteTimeUtc
-);
+    public FileEntry(string sourceFullPath, string relativePath, long lengthBytes, DateTime lastWriteTimeUtc)
+    {
+        SourceFullPath = sourceFullPath;
+        RelativePath = relativePath;
+        LengthBytes = lengthBytes;
+        LastWriteTimeUtc = lastWriteTimeUtc;
+    }
+}

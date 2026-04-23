@@ -1,4 +1,3 @@
-
 {
   "menu": {
     "title": "====== Welcome in EasySave ========",
@@ -14,14 +13,19 @@
   "job": {
     "exit": "Thank you for using EasySave",
     "invalid": "Invalid choice, please try again.",
-    "continue": "Press any key to continue..."
+    "continue": "Press any key to continue...",
+    "max": {
+      "reached": "Maximum number of jobs reached ({0})."
+    }
   },
   "create": {
     "name": "Enter the name",
     "source": "Now enter the source directory",
-    "source.confirm": "Your source directory is {0}",
     "target": "Then enter the target directory",
-    "success": "New backup job created: {0}"
+    "success": "New backup job created: {0}",
+    "type": "Backup type: [I]ncremental / [O]verall",
+    "source.confirm": "Your source directory is {0}",
+    "type.invalid": "Invalid type, incremental selected by default."
   },
   "search": {
     "prompt": "Enter the name of the job to search for: ",
@@ -30,13 +34,120 @@
   "run": {
     "found": "Job found: {0}",
     "running": "Job is running...",
-    "notfound": "No job found."
+    "notfound": "No job found.",
+    "running.named": "Running job: {0}",
+    "finished.named": "Job finished: {0}",
+    "index.notfound": "No job found at index {0}.",
+    "multiple.input": "Enter indexes to run (e.g. 1-3, 1;3;5 or 2):"
   },
-  "lang.select": "Choose language: [en/fr]",
-  "choice.1": "Choice 1 selected",
-  "choice.3": "Choice 3 selected",
-  "choice.4": "Choice 4 selected",
-  "display.listTitle": "Backup jobs created since the start:",
-  "display.empty": "The list is empty.",
-  "add.success": "The job '{0}' has been successfully created."
+  "lang": {
+    "select": "Choose language: [en/fr]"
+  },
+  "choice": {
+    "1": "Choice 1 selected",
+    "3": "Choice 3 selected",
+    "4": "Choice 4 selected"
+  },
+  "display": {
+    "listTitle": "Backup jobs created since the start:",
+    "empty": "The list is empty.",
+    "item": "{0}. {1} - Created on {2}"
+  },
+  "add": {
+    "success": "The job '{0}' has been successfully created."
+  },
+  "validation": {
+    "path": {
+      "invalid": "The path is not valid, try again:"
+    }
+  },
+  "selection": {
+    "empty": "Selection is empty.",
+    "range": {
+      "format": "Invalid range format. Expected: 1-3",
+      "number": "Range must contain valid numbers.",
+      "order": "Invalid range (reversed bounds or <= 0)."
+    },
+    "list": {
+      "number": "List must contain integers > 0."
+    },
+    "single": {
+      "number": "Value must be an integer > 0."
+    }
+  },
+  "active": {
+    "progress": "Progress: {0:F1}%",
+    "remaining": {
+      "files": "Remaining files: {0}"
+    },
+    "last": {
+      "file": "Last copied file: {0}"
+    },
+    "total": {
+      "size": "Total size: {0} bytes",
+      "files": "Number of files: {0}",
+      "copied": "Total copied: {0} bytes"
+    }
+  },
+  "error": {
+    "lang": {
+      "file": {
+        "notfound": "Language file not found: {0}"
+      }
+    },
+    "copyengine": {
+      "logger": {
+        "null": "Logger cannot be null."
+      },
+      "arguments": {
+        "null": "Plan and job name are required."
+      }
+    },
+    "copyplanner": {
+      "source": {
+        "parent": "Unable to determine source parent directory."
+      }
+    },
+    "copyplan": {
+      "source": {
+        "empty": "Source cannot be empty."
+      },
+      "target": {
+        "empty": "Target cannot be empty."
+      }
+    },
+    "path": {
+      "notfound": "Path not found: {0}"
+    },
+    "pathguard": {
+      "both": {
+        "empty": "Source and target paths are empty."
+      },
+      "same": {
+        "path": "Source and target cannot be the same path."
+      },
+      "sub": {
+        "path": "Target cannot be a subdirectory of source."
+      }
+    },
+    "viewmodel": {
+      "joblist": {
+        "null": "Job list cannot be null."
+      },
+      "job": {
+        "null": "Job cannot be null."
+      }
+    },
+    "joblist": {
+      "job": {
+        "null": "Job to add cannot be null."
+      },
+      "max": {
+        "reached": "Job limit reached ({0})."
+      },
+      "collection": {
+        "null": "Job collection cannot be null."
+      }
+    }
+  }
 }

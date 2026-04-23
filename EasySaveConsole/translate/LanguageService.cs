@@ -1,30 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
+﻿using System.Text.Json;
 
-// Translation service: loads a JSON dict and exposes `T(key)`.
 public static class LanguageService
 {
-    private static Dictionary<string, string> _translations = new();
+    private static Dictionary<string,string> _translation = new () ;
 
-    // Loads the specified language file (default: "en")
     public static void Load(string lang = "en")
     {
-        string path = Path.Combine("translate", $"Language{lang.ToUpper()}.json");
+        string path = Path.Combine("translate",$"Language{lang.ToUpper()}.json");
 
         if (!File.Exists(path))
-            throw new FileNotFoundException($"Language file not found: {path}");
+        {
+            throw new FileNotFoundException(string.Format(LanguageService.T("error.lang.file.notfound"), path));
+        }
 
         string json = File.ReadAllText(path);
         var root = JsonSerializer.Deserialize<JsonElement>(json);
-        _translations = new Dictionary<string, string>();
+        _translation = new Dictionary<string, string>();
 
-        // Flattens JSON (e.g., "Menu": {"File": "X"} -> "Menu.File": "X")
-        FlattenJson(root, string.Empty, _translations);
+        FlattenJson(root, string.Empty, _translation);
+
     }
 
-    // Recursively flattens nested JSON objects into dot-separated keys
     private static void FlattenJson(JsonElement element, string prefix, Dictionary<string, string> dict)
     {
         switch (element.ValueKind)
@@ -46,8 +42,9 @@ public static class LanguageService
                 break;
         }
     }
-    
-    // Returns the translation, or falls back to "[key]" if missing
+
     public static string T(string key)
-        => _translations.TryGetValue(key, out var val) ? val : $"[{key}]";
+    {
+        return _translation.TryGetValue(key, out var val) ? val : $"[{key}]";
+    }
 }

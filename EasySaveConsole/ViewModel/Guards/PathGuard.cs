@@ -1,47 +1,33 @@
-using System;
-using System.IO;
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
 
-// Guard utilities: reject dangerous path combinations
-// Main case: target inside source would cause an infinite copy loop
 public static class PathGuard
 {
-    public static void ThrowIfDestinationInsideSource(string sourceDirectory, string targetDirectory)
+    public static void IsLooping(string source_dir,string target_dir)
     {
-        // Validate parameters early
-        if (string.IsNullOrWhiteSpace(sourceDirectory))
+        if (string.IsNullOrWhiteSpace(source_dir) && string.IsNullOrWhiteSpace(target_dir))
         {
-            throw new ArgumentException("Source directory is required.", nameof(sourceDirectory));
+            throw new ArgumentException(LanguageService.T("error.pathguard.both.empty"));
         }
 
-        if (string.IsNullOrWhiteSpace(targetDirectory))
-        {
-            throw new ArgumentException("Target directory is required.", nameof(targetDirectory));
-        }
+        string sourceFullPath = NormalizeDirectoryPath(source_dir);
+        string targetFullPath = NormalizeDirectoryPath(target_dir);
 
-        // Normalize to full paths and ensure a trailing separator for safe prefix checks
-        string sourceFullPath = NormalizeDirectoryPath(sourceDirectory);
-        string targetFullPath = NormalizeDirectoryPath(targetDirectory);
-
-        // Disallow target == sources
         if (IsSamePath(sourceFullPath, targetFullPath))
         {
-            throw new InvalidOperationException("Target directory cannot be the same as the source directory.");
+            throw new InvalidOperationException(LanguageService.T("error.pathguard.same.path"));
         }
 
-        // Disallow target inside source (example: /data -> /data/backup)
-        if (IsSubPathOf(targetFullPath, sourceFullPath))
+        if(IsSubPath(sourceFullPath, targetFullPath))
         {
-            throw new InvalidOperationException("Target directory cannot be inside the source directory (would cause an infinite loop).");
+            throw new InvalidOperationException(LanguageService.T("error.pathguard.sub.path"));
         }
     }
 
-    public static string NormalizeDirectoryPath(string path)
+        public static string NormalizeDirectoryPath(string path)
     {
-        // GetFullPath also resolves relative segments like '.' and '..'
         string full = Path.GetFullPath(path);
 
-        // Add a trailing separator so that "C:\foo" doesn't match "C:\foobar"
-        // Ensure trailing separator so prefix checks are safe
         if (!full.EndsWith(Path.DirectorySeparatorChar) && !full.EndsWith(Path.AltDirectorySeparatorChar))
         {
             full += Path.DirectorySeparatorChar;
@@ -50,17 +36,21 @@ public static class PathGuard
         return full;
     }
 
-    private static bool IsSubPathOf(string candidateFullPathWithSep, string parentFullPathWithSep)
+    public static bool IsSamePath(string source_dir,string target_dir)
     {
-        // Windows: case-insensitive by default; Unix-like: case-sensitive
         var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-        return candidateFullPathWithSep.StartsWith(parentFullPathWithSep, comparison);
+        bool result = string.Equals(source_dir,target_dir,comparison);
+
+        return result;
+        
     }
 
-    private static bool IsSamePath(string aFullPathWithSep, string bFullPathWithSep)
+    public static bool IsSubPath(string source_dir, string target_dir)
     {
-        // Same OS-specific comparison rules as IsSubPathOf
         var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-        return string.Equals(aFullPathWithSep, bFullPathWithSep, comparison);
+        bool result = source_dir.StartsWith(target_dir,comparison);
+
+        return result;
     }
+
 }
