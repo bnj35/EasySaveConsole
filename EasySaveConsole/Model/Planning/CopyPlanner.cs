@@ -58,19 +58,19 @@ public static class CopyPlanner
         };
 
         var directoryList = Directory.EnumerateDirectories(sourceFull,"*",parameters);
-        var fileList = Directory.EnumerateDirectories(sourceFull,"*",parameters);// same as above but better for understanding
-
-        Console.WriteLine($"dirList : {directoryList}");
+        var fileList = Directory.EnumerateFiles(sourceFull,"*",parameters);
 
         foreach (string dir in directoryList)
         {
             string relative = Path.GetRelativePath(sourceFull,dir);
             planDirectory.Directories.Add(new DirectoryEntry(dir,relative));
+
         }
 
         foreach(string file in fileList)
         {
             var fileInfo = new FileInfo(file);
+
             string relative = Path.GetRelativePath(sourceFull,file);
             planDirectory.Files.Add(new FileEntry(file,relative,fileInfo.Length,fileInfo.LastWriteTimeUtc));
 

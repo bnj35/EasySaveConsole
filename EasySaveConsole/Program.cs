@@ -52,7 +52,7 @@
                     break;
                 
                 case '4':
-                    Console.WriteLine(T("choice.4"));
+                    Console.WriteLine(LanguageService.T("choice.4"));
                     RunMultipleJob(vm);
                     break;
 
