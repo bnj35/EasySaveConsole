@@ -5,9 +5,11 @@ public sealed class CopyEngine
 {
     private readonly EasyLogger _logger;
 
-    public CopyEngine(EasyLogger logger)
+    public CopyEngine()
     {
-        if(logger == null)
+        EasyLogger logger = EasyLogger.GetInstance();
+
+        if (logger == null)
         {
             throw new ArgumentNullException(nameof(logger), LanguageService.T("error.copyengine.logger.null"));
         }

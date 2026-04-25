@@ -430,3 +430,4 @@ FodyWeavers.xsd
 ##############################
 */obj/*
 .DS_Store
+status.json

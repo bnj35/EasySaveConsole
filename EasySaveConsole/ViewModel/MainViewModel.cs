@@ -4,6 +4,8 @@ public sealed class MainViewModel
 {
     private readonly Joblist _jobList;
 
+    private StatusFileWriter statusWriter;
+
     public MainViewModel(Joblist jobList)
     {
         if (jobList == null)
@@ -14,11 +16,12 @@ public sealed class MainViewModel
         {
             _jobList = jobList;
         }
+        statusWriter = new StatusFileWriter("status.json");
     }
 
     public BackupJob CreateJob(string name, string source_dir, string target_dir, bool type)
     {
-        BackupJob newjob = new BackupJob(name, source_dir, target_dir, type, DateTime.Now);
+        BackupJob newjob = new BackupJob(name, source_dir, target_dir, type, DateTime.Now, statusWriter);
 
         _jobList.AddJob(newjob);
 
@@ -43,7 +46,7 @@ public sealed class MainViewModel
         {
             throw new ArgumentNullException(nameof(job), LanguageService.T("error.viewmodel.job.null"));
         }
-        return new ActiveJob(job.Name,job.SourceDir,job.TargetDir,job.Type,job.DateCreated);
+        return new ActiveJob(job.Name,job.SourceDir,job.TargetDir,job.Type,job.DateCreated, statusWriter);
     }
 
 
