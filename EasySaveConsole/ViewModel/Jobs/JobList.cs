@@ -1,6 +1,6 @@
 public class Joblist
 {
-    public const int MaxJobs = 5;
+    // public const int MaxJobs = 5;
     
     private readonly List<BackupJob> jobs = new ();
 
@@ -10,11 +10,10 @@ public class Joblist
         {
             throw new ArgumentNullException(nameof(job), LanguageService.T("error.joblist.job.null"));
         }
-
-        if(jobs.Count >= MaxJobs)
-        {
-            throw new InvalidOperationException(string.Format(LanguageService.T("error.joblist.max.reached"), MaxJobs));
-        }
+        // if(jobs.Count >= MaxJobs)
+        // {
+        //     throw new InvalidOperationException(string.Format(LanguageService.T("error.joblist.max.reached"), MaxJobs));
+        // }
 
         jobs.Add(job);
     }

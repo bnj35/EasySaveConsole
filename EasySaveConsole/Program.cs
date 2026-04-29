@@ -35,11 +35,11 @@
 
                 case '1':
                     Console.WriteLine(LanguageService.T("choice.1"));
-                    if (vm.GetAllJobs().Count >= Joblist.MaxJobs)
-                    {
-                        Console.WriteLine(string.Format(LanguageService.T("job.max.reached"), Joblist.MaxJobs));
-                        break;
-                    }
+                    // if (vm.GetAllJobs().Count >= Joblist.MaxJobs)
+                    // {
+                    //     Console.WriteLine(string.Format(LanguageService.T("job.max.reached"), Joblist.MaxJobs));
+                    //     break;
+                    // }
                     CreateJob(vm);
                     break;
 
