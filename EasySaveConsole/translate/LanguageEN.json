@@ -148,6 +148,9 @@
       "collection": {
         "null": "Job collection cannot be null."
       }
+    },
+    "configuration": {
+      "notFound": "Configuration file not found, the default configuration will be used. Error message: {0}"
     }
   }
 }

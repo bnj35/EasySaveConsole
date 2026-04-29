@@ -5,9 +5,9 @@ public sealed class CopyEngine
 {
     private readonly EasyLogger _logger;
 
-    public CopyEngine()
+    public CopyEngine(EasyLogSettings settings)
     {
-        EasyLogger logger = EasyLogger.GetInstance();
+        EasyLogger logger = EasyLogger.GetInstance(settings.DirectoryPath, settings.Format);
 
         if (logger == null)
         {

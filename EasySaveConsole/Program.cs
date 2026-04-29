@@ -1,4 +1,7 @@
-﻿class Program
+﻿using EasyLog;
+using Microsoft.Extensions.Configuration;
+
+class Program
 {
     static void Main(string[] args)
     {
@@ -12,10 +15,10 @@
         }
 
         LanguageService.Load(lang);
-
+ 
         Joblist joblist = new Joblist();
 
-        MainViewModel vm = new MainViewModel(joblist);
+        MainViewModel vm = new MainViewModel(joblist, GetConfiguration());
 
         bool exit = false;
 
@@ -331,5 +334,23 @@
 
         indices.Add(single);
         return true;
+    }
+
+    static Settings GetConfiguration()
+    {
+        var settings = new Settings();
+        try
+        {
+            IConfigurationRoot config = new ConfigurationBuilder()
+                .AddJsonFile("./appsettings.json")
+                .Build();
+
+            config.Bind(settings);
+        }
+        catch (FileNotFoundException ex)
+        {
+            Console.WriteLine(LanguageService.T("error.configuration.notFound"), ex.Message);
+        }
+        return settings;
     }
 }
