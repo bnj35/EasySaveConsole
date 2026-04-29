@@ -17,6 +17,6 @@ public sealed class StatusFileSettings
 public sealed class EasyLogSettings
 {
     public string DirectoryPath { get; set; } = "log";
-    public string Format { get; set; } = ".json";
+    public string FileFormat { get; set; } = ".json";
     public string DateFormat { get; set; } = "dd/MM/yyyy HH:mm:ss";
 }

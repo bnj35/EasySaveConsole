@@ -7,7 +7,7 @@ public sealed class CopyEngine
 
     public CopyEngine(EasyLogSettings settings)
     {
-        EasyLogger logger = EasyLogger.GetInstance(settings.DirectoryPath, settings.Format);
+        EasyLogger logger = EasyLogger.GetInstance(settings.DirectoryPath, settings.DateFormat, settings.FileFormat);
 
         if (logger == null)
         {
