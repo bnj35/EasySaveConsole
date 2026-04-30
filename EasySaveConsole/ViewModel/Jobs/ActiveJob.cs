@@ -71,10 +71,11 @@ public class ActiveJob : BackupJob
 
     public List<string>? DestinationOfFiles { get; set; }
 
-    private StatusFileWriter StatusWriter;
+    private StatusLogger StatusWriter;
+
     private EasyLogSettings EasyLogSettings;
 
-    public ActiveJob(string name, string source_dir, string target_dir, bool type, DateTime date, StatusFileWriter statusWriter, EasyLogSettings easyLogSettings) : base(name, source_dir, target_dir, type, date, statusWriter)
+    public ActiveJob(string name, string source_dir, string target_dir, bool type, DateTime date, StatusLogger statusLogger, EasyLogSettings easyLogSettings) : base(name, source_dir, target_dir, type, date, statusLogger)
     {
         TotalFileSize = 0;
         NumberFiles = 0;
@@ -83,7 +84,7 @@ public class ActiveJob : BackupJob
 
         SizeFileRemaining = TotalFileSize;
         Progression = 0.0;
-        StatusWriter = statusWriter;
+        StatusWriter = statusLogger;
         EasyLogSettings = easyLogSettings;
     }
 
@@ -127,7 +128,7 @@ public class ActiveJob : BackupJob
                 LastFileCopied = Path.GetFileName(destinationPath);
                 LastCopiedBytes = (int)file.LengthBytes;
                 LastTransferMs = transferMs;
-                StatusWriter.UpdateJobStatus(new ActiveJobEntry(this, JobState.Active, file.SourceFullPath, destinationPath));
+                StatusWriter.UpdateStatus(new ActiveJobEntry(this, JobState.Active, file.SourceFullPath, destinationPath));
             }
         );
         Console.WriteLine();

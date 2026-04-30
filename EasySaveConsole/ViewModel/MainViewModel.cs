@@ -4,9 +4,9 @@ public sealed class MainViewModel
 {
     private readonly Joblist _jobList;
 
-    private StatusFileWriter statusWriter;
+    private StatusLogger _statusWriter;
 
-    private Settings Settings;
+    private Settings _settings;
 
     public MainViewModel(Joblist jobList, Settings settings)
     {
@@ -18,14 +18,13 @@ public sealed class MainViewModel
         {
             _jobList = jobList;
         }
-        Settings = settings;
-        string statusFileName = settings.StatusFileSettings.Name + settings.StatusFileSettings.Format;
-        statusWriter = new StatusFileWriter(statusFileName);
+        _settings = settings;
+        _statusWriter = new StatusLogger(settings.StatusFileSettings.FilePath, settings.StatusFileSettings.FileFormat);
     }
 
     public BackupJob CreateJob(string name, string source_dir, string target_dir, bool type)
     {
-        BackupJob newjob = new BackupJob(name, source_dir, target_dir, type, DateTime.Now, statusWriter);
+        BackupJob newjob = new BackupJob(name, source_dir, target_dir, type, DateTime.Now, _statusWriter);
 
         _jobList.AddJob(newjob);
 
@@ -50,7 +49,7 @@ public sealed class MainViewModel
         {
             throw new ArgumentNullException(nameof(job), LanguageService.T("error.viewmodel.job.null"));
         }
-        return new ActiveJob(job.Name,job.SourceDir,job.TargetDir,job.Type,job.DateCreated, statusWriter, Settings.EasyLogSettings);
+        return new ActiveJob(job.Name,job.SourceDir,job.TargetDir,job.Type,job.DateCreated, _statusWriter, _settings.EasyLogSettings);
     }
 
 

@@ -10,13 +10,14 @@ public sealed class Settings
 
 public sealed class StatusFileSettings
 {
-    public string Name { get; set; } = "status";
-    public string Format { get; set; } = ".json";
+    public string FilePath { get; set; } = "./status";
+    public string FileFormat { get; set; } = ".json";
+    public string DateFormat { get; set; } = "dd/MM/yyyy HH:mm:ss";
 }
 
 public sealed class EasyLogSettings
 {
-    public string DirectoryPath { get; set; } = "log";
+    public string DirectoryPath { get; set; } = "./log";
     public string FileFormat { get; set; } = ".json";
     public string DateFormat { get; set; } = "dd/MM/yyyy HH:mm:ss";
 }
