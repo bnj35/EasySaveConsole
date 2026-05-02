@@ -15,10 +15,22 @@ class Program
         }
 
         LanguageService.Load(lang);
- 
+        
+        Console.WriteLine(LanguageService.T("log.select"));
+
+        string logFileFormat = (Console.ReadLine() ?? "json").Trim().ToLowerInvariant();
+
+        Settings settings = GetConfiguration();
+
+        if (logFileFormat != "xml" && logFileFormat != "json")
+        {
+            logFileFormat = settings.DefaultFileFormat;
+            Console.WriteLine(LanguageService.T("log.invalid"));
+        }
+
         Joblist joblist = new Joblist();
 
-        MainViewModel vm = new MainViewModel(joblist, GetConfiguration());
+        MainViewModel vm = new MainViewModel(joblist, settings, logFileFormat);
 
         bool exit = false;
 
@@ -210,7 +222,7 @@ class Program
         {
             ActiveJob active = vm.CreateActiveJob(job);
             AttachHandlers(active);
-            active.RunJob();
+            vm.RunJob(active);
         }
         catch (Exception ex)
         {

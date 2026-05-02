@@ -20,7 +20,7 @@
         {
             if (_instance == null)
             {
-                if (logFormat == ".xml")
+                if (logFormat == "xml")
                 {
                     _instance = new EasyLogger(new XmlLogWriter(logDirectory), dateFormat);
                 }

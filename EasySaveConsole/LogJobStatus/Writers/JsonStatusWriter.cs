@@ -17,12 +17,12 @@ public sealed class JsonStatusWriter : IStatusWriter
         _filePath = filePath;
     }
 
-    public void ResetJobStatus()
+    public void ResetStatusFile()
     {
         WriteAll(new Dictionary<string, object>());
     }
 
-    public void UpdateJobStatus(BackupJobEntry entry)
+    public void UpdateEntry(LogEntryBackupJob entry)
     {
         var entries = ReadAll();
         entries[entry.Name] = entry;

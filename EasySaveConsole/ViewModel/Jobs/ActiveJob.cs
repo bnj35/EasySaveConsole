@@ -71,11 +71,10 @@ public class ActiveJob : BackupJob
 
     public List<string>? DestinationOfFiles { get; set; }
 
-    private StatusLogger StatusWriter;
+    public event Action<string, string>? FileCopied;
 
-    private EasyLogSettings EasyLogSettings;
 
-    public ActiveJob(string name, string source_dir, string target_dir, bool type, DateTime date, StatusLogger statusLogger, EasyLogSettings easyLogSettings) : base(name, source_dir, target_dir, type, date, statusLogger)
+    public ActiveJob(string name, string source_dir, string target_dir, bool type, DateTime date) : base(name, source_dir, target_dir, type, date)
     {
         TotalFileSize = 0;
         NumberFiles = 0;
@@ -84,11 +83,9 @@ public class ActiveJob : BackupJob
 
         SizeFileRemaining = TotalFileSize;
         Progression = 0.0;
-        StatusWriter = statusLogger;
-        EasyLogSettings = easyLogSettings;
     }
 
-    public void RunJob()
+    public void RunJob(CopyEngine engine)
     {
         Console.WriteLine(string.Format(LanguageService.T("run.running.named"), Name));
 
@@ -104,8 +101,6 @@ public class ActiveJob : BackupJob
         Console.WriteLine(string.Format(LanguageService.T("active.total.size"), TotalFileSize));
         Console.WriteLine(string.Format(LanguageService.T("active.total.files"), NumberFiles));
         Console.WriteLine();
-
-        CopyEngine engine = new CopyEngine(EasyLogSettings);
 
         engine.Execute(
             plan,
@@ -128,7 +123,8 @@ public class ActiveJob : BackupJob
                 LastFileCopied = Path.GetFileName(destinationPath);
                 LastCopiedBytes = (int)file.LengthBytes;
                 LastTransferMs = transferMs;
-                StatusWriter.UpdateStatus(new ActiveJobEntry(this, JobState.Active, file.SourceFullPath, destinationPath));
+
+                FileCopied?.Invoke(file.SourceFullPath, destinationPath);
             }
         );
         Console.WriteLine();

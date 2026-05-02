@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
-public sealed class ActiveJobEntry : BackupJobEntry
+public sealed class LogEntryActiveJob : LogEntryBackupJob
 {
     public int TotalFiles { get; set; }
     public float TotalBytes { get; set; }
@@ -13,9 +13,9 @@ public sealed class ActiveJobEntry : BackupJobEntry
     public string CurrentSourceFile { get; set; } = "";
     public string CurrentDestFile { get; set; } = "";
 
-    public ActiveJobEntry() { }
+    public LogEntryActiveJob() { }
 
-    public ActiveJobEntry(ActiveJob job, JobState state, string currentSource, string currentDest) : base(job, state)
+    public LogEntryActiveJob(ActiveJob job, JobState state, string dateFormat, string currentSource, string currentDest) : base(job, state, dateFormat)
     {
         TotalFiles = job.NumberFiles;
         TotalBytes = job.TotalFileSize;

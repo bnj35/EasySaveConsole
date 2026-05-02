@@ -9,7 +9,7 @@ public sealed class XmlStatusWriter : IStatusWriter
         _filePath = filePath;
     }
 
-    public void UpdateJobStatus(BackupJobEntry entry)
+    public void UpdateEntry(LogEntryBackupJob entry)
     {
         XDocument doc = File.Exists(_filePath) ? XDocument.Load(_filePath) : new XDocument(new XElement("Jobs"));
 
@@ -31,13 +31,13 @@ public sealed class XmlStatusWriter : IStatusWriter
         doc.Save(_filePath);
     }
 
-    public void ResetJobStatus()
+    public void ResetStatusFile()
     {
         XDocument doc = new XDocument(new XElement("Jobs"));
         doc.Save(_filePath);
     }
 
-    private static XElement ToXElement(BackupJobEntry entry)
+    private static XElement ToXElement(LogEntryBackupJob entry)
     {
         var element = new XElement("Job",
             new XElement("Name", entry.Name),
@@ -48,7 +48,7 @@ public sealed class XmlStatusWriter : IStatusWriter
             new XElement("DateCreated", entry.DateCreated)
         );
 
-        if (entry is ActiveJobEntry active)
+        if (entry is LogEntryActiveJob active)
         {
             element.Add(
                 new XElement("TotalFiles", active.TotalFiles),
