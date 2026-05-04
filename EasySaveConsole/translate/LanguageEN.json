@@ -25,7 +25,8 @@
     "success": "New backup job created: {0}",
     "type": "Backup type: [I]ncremental / [O]verall",
     "source.confirm": "Your source directory is {0}",
-    "type.invalid": "Invalid type, incremental selected by default."
+    "type.invalid": "Invalid type, incremental selected by default.",
+    "encrypt": "Encrypt backup (CryptoSoft)"
   },
   "search": {
     "prompt": "Enter the name of the job to search for: ",
@@ -152,6 +153,9 @@
     },
     "configuration": {
       "notFound": "Configuration file not found, the default configuration will be used. Error message: {0}"
+    },
+    "cryptosoft": {
+      "failed": "Error during CryptoSoft execution for file. Error code: {0}"
     }
   }
 }

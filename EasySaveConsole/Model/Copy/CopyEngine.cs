@@ -14,6 +14,7 @@ public sealed class CopyEngine
         CopyPlan plan,
         string jobName,
         bool type,
+        bool encrypt,
         Action<double>? OnProgressPercent = null,
         Action<int, int>? OnRemainingChanged = null,
         Action<FileEntry,string,double>? OnFileCopied = null
@@ -53,7 +54,7 @@ public sealed class CopyEngine
                 _logger.LogDirectoryCreation(jobName, destDir);
             }
 
-            double transferMs = CopyFileWithTiming(file.SourceFullPath,destFile, type);
+            double transferMs = CopyFileWithTiming(file.SourceFullPath,destFile, type, encrypt);
 
             remainingBytes -= (int)file.LengthBytes;
             remainingFiles--;
@@ -72,12 +73,18 @@ public sealed class CopyEngine
         }
     }
 
-    private static double CopyFileWithTiming(string sourceFile, string destFile, bool type)
+    private static double CopyFileWithTiming(string sourceFile, string destFile, bool type, bool encrypt)
     {
         var time = Stopwatch.StartNew();
         double elapsedTime = 0.0;
 
-        const int bufferSize = 1024 * 256;
+        if (encrypt)
+        {
+            CryptoSoftRunner.Encrypt(sourceFile, destFile);
+        }
+        else
+        {
+            const int bufferSize = 1024 * 256;
 
         var sourceOptions = new FileStreamOptions
         {
@@ -109,6 +116,7 @@ public sealed class CopyEngine
         source.CopyTo(destination,bufferSize);
 
         destination.Flush(true);
+        }
 
         time.Stop();
 

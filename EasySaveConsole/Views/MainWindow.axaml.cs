@@ -45,11 +45,13 @@ public partial class MainWindow : Window
         var sourceInput = this.FindControl<TextBox>("SourceDirInput");
         var targetInput = this.FindControl<TextBox>("TargetDirInput");
         var typeCombo = this.FindControl<ComboBox>("BackupTypeCombo");
+        var encryptCheck = this.FindControl<CheckBox>("EncryptCheck");
 
         string name = nameInput?.Text ?? "";
         string source = sourceInput?.Text ?? "";
         string target = targetInput?.Text ?? "";
         bool isFullBackup = typeCombo?.SelectedIndex != 1;
+        bool encrypt = encryptCheck?.IsChecked ?? false;
 
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(source) || string.IsNullOrWhiteSpace(target))
         {
@@ -59,7 +61,7 @@ public partial class MainWindow : Window
 
         try
         {
-            _viewModel.CreateJob(name, source, target, isFullBackup);
+            _viewModel.CreateJob(name, source, target, isFullBackup, encrypt);
             UpdateStatus($"Job '{name}' created successfully");
             RefreshJobList();
 
@@ -142,6 +144,9 @@ public partial class MainWindow : Window
 
     private void DeleteJobButton_Click(object? sender, RoutedEventArgs e)
     {
+        if (_viewModel == null)
+            return;
+            
         var jobsList = this.FindControl<ListBox>("JobsList");
         if (jobsList?.SelectedItem is BackupJob job)
         {

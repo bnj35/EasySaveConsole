@@ -76,7 +76,7 @@ public class ActiveJob : BackupJob
     public event Action<string, string>? FileCopied;
 
 
-    public ActiveJob(string name, string source_dir, string target_dir, bool type, DateTime date) : base(name, source_dir, target_dir, type, date)
+    public ActiveJob(string name, string source_dir, string target_dir, bool type, bool encrypt, DateTime date) : base(name, source_dir, target_dir, type, encrypt, date)
     {
         TotalFileSize = 0;
         NumberFiles = 0;
@@ -108,6 +108,7 @@ public class ActiveJob : BackupJob
             plan,
             Name,
             Type,
+            Encrypt,
             OnProgressPercent: percent =>
             {
                 Progression = percent;

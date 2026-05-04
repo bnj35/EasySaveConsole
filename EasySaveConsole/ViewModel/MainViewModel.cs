@@ -26,9 +26,9 @@ public sealed class MainViewModel
         _copyEngine = new CopyEngine(settings);
     }
 
-    public BackupJob CreateJob(string name, string source_dir, string target_dir, bool type)
+    public BackupJob CreateJob(string name, string source_dir, string target_dir, bool type, bool encrypt)
     {
-        BackupJob newjob = new BackupJob(name, source_dir, target_dir, type, DateTime.Now);
+        BackupJob newjob = new BackupJob(name, source_dir, target_dir, type, encrypt, DateTime.Now);
 
         _jobList.AddJob(newjob);
 
@@ -55,7 +55,7 @@ public sealed class MainViewModel
         {
             throw new ArgumentNullException(nameof(job), LanguageService.T("error.viewmodel.job.null"));
         }
-        return new ActiveJob(job.Name,job.SourceDir,job.TargetDir,job.Type,job.DateCreated);
+        return new ActiveJob(job.Name, job.SourceDir, job.TargetDir, job.Type, job.Encrypt, job.DateCreated);
     }
     public void RunJob(ActiveJob active)
     {
