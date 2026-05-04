@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-public sealed class StatusFileWriter
+public sealed class JsonStatusWriter : IStatusWriter
 {
     private readonly string _filePath;
 
@@ -12,13 +12,17 @@ public sealed class StatusFileWriter
         Converters = { new JsonStringEnumConverter() }
     };
 
-    public StatusFileWriter(string filePath)
+    public JsonStatusWriter(string filePath)
     {
-        _filePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
+        _filePath = filePath;
+    }
+
+    public void ResetStatusFile()
+    {
         WriteAll(new Dictionary<string, object>());
     }
 
-    public void UpdateJobStatus(BackupJobEntry entry)
+    public void UpdateEntry(LogEntryBackupJob entry)
     {
         var entries = ReadAll();
         entries[entry.Name] = entry;

@@ -5,18 +5,9 @@ public sealed class CopyEngine
 {
     private readonly EasyLogger _logger;
 
-    public CopyEngine()
+    public CopyEngine(Settings settings)
     {
-        EasyLogger logger = EasyLogger.GetInstance();
-
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger), LanguageService.T("error.copyengine.logger.null"));
-        }
-        else
-        {
-            _logger = logger;
-        }
+        _logger = EasyLogger.GetInstance(settings.EasyLogSettings.DirectoryPath, settings.DateFormat, settings.DefaultFileFormat);
     }
 
     public void Execute(

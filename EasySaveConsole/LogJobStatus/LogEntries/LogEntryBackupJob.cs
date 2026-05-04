@@ -1,4 +1,4 @@
-﻿public class BackupJobEntry
+﻿public class LogEntryBackupJob
 {
     public string Name { get; set; } = "";
     public JobState State { get; set; }
@@ -7,15 +7,15 @@
     public string TargetDir { get; set; } = "";
     public string DateCreated { get; set; } = "";
 
-    public BackupJobEntry() { }
+    public LogEntryBackupJob() { }
 
-    public BackupJobEntry(BackupJob job, JobState State)
+    public LogEntryBackupJob(BackupJob job, JobState state, string DateFormat)
     {
         Name = job.Name;
-        this.State = State;
+        State = state;
         SourceDir = job.SourceDir;
         TargetDir = job.TargetDir;
-        DateCreated = job.DateCreated.ToString("dd/MM/yyyy HH:mm:ss");
-        LastActionTimestamp = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+        DateCreated = job.DateCreated.ToString(DateFormat);
+        LastActionTimestamp = DateTime.Now.ToString(DateFormat);
     }
 }

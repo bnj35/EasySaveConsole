@@ -14,13 +14,12 @@ public class BackupJob : ObservableObject
     public DateTime? DateStart {get; set;}
     public DateTime? DateEnd {get; set;}
 
-    public BackupJob (string name, string source_dir, string target_dir, bool type, DateTime date_created, StatusFileWriter statusWriter)
+    public BackupJob (string name, string source_dir, string target_dir, bool type, DateTime date_created)
     {
         Name = name;
         SourceDir = source_dir;
         TargetDir = target_dir;
         Type = type;
         DateCreated = date_created;
-        statusWriter.UpdateJobStatus(new BackupJobEntry(this, JobState.Inactive));
     }
 }
