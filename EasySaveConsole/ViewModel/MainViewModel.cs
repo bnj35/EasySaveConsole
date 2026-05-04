@@ -1,5 +1,7 @@
 using System.ComponentModel;
 
+namespace EasySaveConsole;
+
 public sealed class MainViewModel
 {
     private readonly Joblist _jobList;
@@ -7,6 +9,8 @@ public sealed class MainViewModel
     private readonly StatusLogger _statusLogger;
 
     private readonly CopyEngine _copyEngine;
+
+    public string StatusMessage { get; set; } = "Ready";
 
     public MainViewModel(Joblist jobList, Settings settings, string logFileFormat)
     {
@@ -59,5 +63,10 @@ public sealed class MainViewModel
         active.FileCopied += OnFileCopied;
         active.RunJob(_copyEngine);
         active.FileCopied -= OnFileCopied;
+    }
+
+    public void DeleteJob(int index)
+    {
+        BackupJob? deletedJob = _jobList.DeleteJob(index);
     }
 }
