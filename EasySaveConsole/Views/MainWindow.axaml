@@ -38,6 +38,8 @@
                     </ComboBox>
                 </StackPanel>
 
+                <CheckBox x:Name="EncryptCheck" Content="Encrypt backup (CryptoSoft)" />
+
                 <Button x:Name="CreateJobButton" Content="Create Job" Padding="8,4" />
             </StackPanel>
 

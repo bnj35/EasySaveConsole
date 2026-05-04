@@ -25,7 +25,8 @@
     "success": "Nouveau travail de sauvegarde créé : {0}",
     "type": "Type de sauvegarde: [I]ncrémentale / [O]complète",
     "source.confirm": "Votre répertoire source est {0}",
-    "type.invalid": "Type invalide, incrémentale sélectionnée par défaut."
+    "type.invalid": "Type invalide, incrémentale sélectionnée par défaut.",
+    "encrypt": "Chiffrer la sauvegarde (CryptoSoft)"
   },
   "search": {
     "prompt": "Entrez le nom du travail à rechercher : ",
@@ -152,6 +153,9 @@
     },
     "configuration": {
       "notFound": "Le fichier de configuration est introuvable, la configuration par défaut sera utilisée. Message d'erreur: {0}"
+    },
+    "cryptosoft": {
+      "failed": "Erreur lors de l'exécution de CryptoSoft pour le fichier. Code d'erreur : {0}"
     }
   }
 }
