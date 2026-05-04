@@ -1,6 +1,8 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
+namespace EasySaveConsole;
+
 public sealed class JsonStatusWriter : IStatusWriter
 {
     private readonly string _filePath;

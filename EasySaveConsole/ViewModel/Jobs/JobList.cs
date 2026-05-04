@@ -1,3 +1,4 @@
+namespace EasySaveConsole;
 public class Joblist
 {
     // public const int MaxJobs = 5;

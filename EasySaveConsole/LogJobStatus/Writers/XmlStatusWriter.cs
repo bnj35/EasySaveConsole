@@ -1,5 +1,7 @@
 ﻿using System.Xml.Linq;
 
+namespace EasySaveConsole;
+
 public sealed class XmlStatusWriter : IStatusWriter
 {
     private readonly string _filePath;

@@ -1,4 +1,5 @@
-﻿public enum JobState
+﻿namespace EasySaveConsole;
+public enum JobState
 {
     Inactive,
     Active

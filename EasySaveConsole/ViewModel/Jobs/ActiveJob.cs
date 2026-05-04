@@ -1,5 +1,7 @@
 using EasyLog;
 
+namespace EasySaveConsole;
+
 public class ActiveJob : BackupJob
 {
     private float _totalFileSize;

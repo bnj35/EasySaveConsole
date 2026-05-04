@@ -1,3 +1,4 @@
+namespace EasySaveConsole;
 public class BackupJob : ObservableObject
 {
     public string Name {get; set;}
