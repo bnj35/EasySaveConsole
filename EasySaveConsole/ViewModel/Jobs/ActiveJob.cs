@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using EasyLog;
 
 public class ActiveJob : BackupJob
@@ -7,7 +6,7 @@ public class ActiveJob : BackupJob
 
     public float TotalFileSize
     {
-        
+
         get => _totalFileSize;
         private set => SetProperty(ref _totalFileSize, value);
     }
@@ -68,11 +67,12 @@ public class ActiveJob : BackupJob
         private set => SetProperty(ref _lastTransferMs, value);
     }
 
-    public List<string>? AddressesOfFiles{get; set; }
+    public List<string>? AddressesOfFiles { get; set; }
 
-    public List<string>? DestinationOfFiles {get; set; }
+    public List<string>? DestinationOfFiles { get; set; }
 
-    private readonly EasyLogger Logger;
+    public event Action<string, string>? FileCopied;
+
 
     public ActiveJob(string name, string source_dir, string target_dir, bool type, DateTime date) : base(name, source_dir, target_dir, type, date)
     {
@@ -83,11 +83,9 @@ public class ActiveJob : BackupJob
 
         SizeFileRemaining = TotalFileSize;
         Progression = 0.0;
-        
-        Logger = EasyLogger.GetInstance();
     }
 
-    public void RunJob()
+    public void RunJob(CopyEngine engine)
     {
         Console.WriteLine(string.Format(LanguageService.T("run.running.named"), Name));
 
@@ -100,39 +98,38 @@ public class ActiveJob : BackupJob
         NumberFilesRemaining = NumberFiles;
         SizeFileRemaining = TotalFileSize;
 
-    Console.WriteLine(string.Format(LanguageService.T("active.total.size"), TotalFileSize));
-    Console.WriteLine(string.Format(LanguageService.T("active.total.files"), NumberFiles));
-    Console.WriteLine();
+        Console.WriteLine(string.Format(LanguageService.T("active.total.size"), TotalFileSize));
+        Console.WriteLine(string.Format(LanguageService.T("active.total.files"), NumberFiles));
+        Console.WriteLine();
 
-    CopyEngine engine = new CopyEngine(Logger);
+        engine.Execute(
+            plan,
+            Name,
+            Type,
+            OnProgressPercent: percent =>
+            {
+                Progression = percent;
+            },
+            OnRemainingChanged: (filesRemaining, bytesRemaining) =>
+            {
+                NumberFilesRemaining = filesRemaining;
+                SizeFileRemaining = (float)bytesRemaining;
+            },
+            OnFileCopied: (file, destinationPath, transferMs) =>
+            {
+                AddressesOfFiles?.Add(file.SourceFullPath);
+                DestinationOfFiles?.Add(destinationPath);
 
-    engine.Execute(
-        plan,
-        Name,
-        Type,
-        OnProgressPercent : percent =>
-        {
-            Progression = percent;
-        },
-        OnRemainingChanged : (filesRemaining, bytesRemaining) =>
-        {
-            NumberFilesRemaining = filesRemaining;
-            SizeFileRemaining = (float)bytesRemaining;
-        },
-        OnFileCopied: (file, destinationPath, transferMs) =>
-        {
-            AddressesOfFiles?.Add(file.SourceFullPath);
-            DestinationOfFiles?.Add(destinationPath);
+                LastFileCopied = Path.GetFileName(destinationPath);
+                LastCopiedBytes = (int)file.LengthBytes;
+                LastTransferMs = transferMs;
 
-            LastFileCopied = Path.GetFileName(destinationPath);
-            LastCopiedBytes = (int)file.LengthBytes;
-            LastTransferMs = transferMs;
-        }
-    );
-
-    Console.WriteLine();
-    float totalCopied = plan.TotalBytes - SizeFileRemaining;
-    Console.WriteLine(string.Format(LanguageService.T("active.total.copied"), totalCopied));
+                FileCopied?.Invoke(file.SourceFullPath, destinationPath);
+            }
+        );
+        Console.WriteLine();
+        float totalCopied = plan.TotalBytes - SizeFileRemaining;
+        Console.WriteLine(string.Format(LanguageService.T("active.total.copied"), totalCopied));
 
     }
 

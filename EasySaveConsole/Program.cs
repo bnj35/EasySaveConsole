@@ -1,4 +1,7 @@
-﻿class Program
+﻿using EasyLog;
+using Microsoft.Extensions.Configuration;
+
+class Program
 {
     static void Main(string[] args)
     {
@@ -12,10 +15,22 @@
         }
 
         LanguageService.Load(lang);
+        
+        Console.WriteLine(LanguageService.T("log.select"));
+
+        string logFileFormat = (Console.ReadLine() ?? "json").Trim().ToLowerInvariant();
+
+        Settings settings = GetConfiguration();
+
+        if (logFileFormat != "xml" && logFileFormat != "json")
+        {
+            logFileFormat = settings.DefaultFileFormat;
+            Console.WriteLine(LanguageService.T("log.invalid"));
+        }
 
         Joblist joblist = new Joblist();
 
-        MainViewModel vm = new MainViewModel(joblist);
+        MainViewModel vm = new MainViewModel(joblist, settings, logFileFormat);
 
         bool exit = false;
 
@@ -35,11 +50,11 @@
 
                 case '1':
                     Console.WriteLine(LanguageService.T("choice.1"));
-                    if (vm.GetAllJobs().Count >= Joblist.MaxJobs)
-                    {
-                        Console.WriteLine(string.Format(LanguageService.T("job.max.reached"), Joblist.MaxJobs));
-                        break;
-                    }
+                    // if (vm.GetAllJobs().Count >= Joblist.MaxJobs)
+                    // {
+                    //     Console.WriteLine(string.Format(LanguageService.T("job.max.reached"), Joblist.MaxJobs));
+                    //     break;
+                    // }
                     CreateJob(vm);
                     break;
 
@@ -207,7 +222,7 @@
         {
             ActiveJob active = vm.CreateActiveJob(job);
             AttachHandlers(active);
-            active.RunJob();
+            vm.RunJob(active);
         }
         catch (Exception ex)
         {
@@ -331,5 +346,23 @@
 
         indices.Add(single);
         return true;
+    }
+
+    static Settings GetConfiguration()
+    {
+        var settings = new Settings();
+        try
+        {
+            IConfigurationRoot config = new ConfigurationBuilder()
+                .AddJsonFile("./appsettings.json")
+                .Build();
+
+            config.Bind(settings);
+        }
+        catch (FileNotFoundException ex)
+        {
+            Console.WriteLine(LanguageService.T("error.configuration.notFound"), ex.Message);
+        }
+        return settings;
     }
 }

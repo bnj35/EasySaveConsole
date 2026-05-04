@@ -43,6 +43,10 @@
   "lang": {
     "select": "Choisissez la langue : [en/fr]"
   },
+  "log": {
+    "select": "Choisissez un format pour les fichiers de logs: [json/xml]",
+    "invalid": "Format invalide, le format par défaut sera utilisé"
+  },
   "choice": {
     "1": "Choix 1 sélectionné",
     "3": "Choix 3 sélectionné",
@@ -96,9 +100,6 @@
       }
     },
     "copyengine": {
-      "logger": {
-        "null": "Le logger ne peut pas être nul."
-      },
       "arguments": {
         "null": "Le plan et le nom du job sont obligatoires."
       }
@@ -148,6 +149,9 @@
       "collection": {
         "null": "La collection de jobs ne peut pas être nulle."
       }
+    },
+    "configuration": {
+      "notFound": "Le fichier de configuration est introuvable, la configuration par défaut sera utilisée. Message d'erreur: {0}"
     }
   }
 }

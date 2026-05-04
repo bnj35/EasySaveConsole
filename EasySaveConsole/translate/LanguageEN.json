@@ -43,6 +43,10 @@
   "lang": {
     "select": "Choose language: [en/fr]"
   },
+  "log": {
+    "select": "Choose a format for the logs files: [json/xml]",
+    "invalid": "Invalid format, the default format will be used"
+  },
   "choice": {
     "1": "Choice 1 selected",
     "3": "Choice 3 selected",
@@ -96,9 +100,6 @@
       }
     },
     "copyengine": {
-      "logger": {
-        "null": "Logger cannot be null."
-      },
       "arguments": {
         "null": "Plan and job name are required."
       }
@@ -148,6 +149,9 @@
       "collection": {
         "null": "Job collection cannot be null."
       }
+    },
+    "configuration": {
+      "notFound": "Configuration file not found, the default configuration will be used. Error message: {0}"
     }
   }
 }
