@@ -56,4 +56,26 @@ public class Joblist
             return jobs.FirstOrDefault(l => l.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
         }
     }
+
+    public BackupJob DeleteJob(int index)
+    {
+        if (index <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index), LanguageService.T("error.joblist.index.invalid"));
+        }
+        else
+        {
+            int realIndex = index - 1;
+            if (realIndex >= jobs.Count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index), LanguageService.T("error.joblist.index.invalid"));
+            }
+            else
+            {
+                BackupJob jobToDelete = jobs[realIndex];
+                jobs.RemoveAt(realIndex);
+                return jobToDelete;
+            }
+        }
+    }
 }

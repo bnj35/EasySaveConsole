@@ -123,6 +123,8 @@ public partial class MainWindow : Window
         var jobsList = this.FindControl<ListBox>("JobsList");
         if (jobsList?.SelectedItem is BackupJob job)
         {
+            int index = _viewModel.GetAllJobs().ToList().IndexOf(job);
+            _viewModel.DeleteJob(index + 1);
             UpdateStatus($"Job '{job.Name}' deleted");
             RefreshJobList();
         }

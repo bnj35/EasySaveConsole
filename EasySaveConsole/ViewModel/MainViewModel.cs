@@ -64,4 +64,9 @@ public sealed class MainViewModel
         active.RunJob(_copyEngine);
         active.FileCopied -= OnFileCopied;
     }
+
+    public void DeleteJob(int index)
+    {
+        BackupJob? deletedJob = _jobList.DeleteJob(index);
+    }
 }
