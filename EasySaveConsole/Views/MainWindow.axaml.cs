@@ -80,42 +80,64 @@ public partial class MainWindow : Window
             return;
 
         var jobsList = this.FindControl<ListBox>("JobsList");
-        if (jobsList?.SelectedItem is not BackupJob job)
+        var activeJobsList = this.FindControl<ListBox>("ActiveJobsList");
+        var selectedJobs = jobsList?.SelectedItems?.OfType<BackupJob>().ToList() ?? [];
+
+        if (selectedJobs.Count == 0)
         {
-            UpdateStatus("Please select a job to run");
+            UpdateStatus("Please select one or more jobs to run");
             return;
         }
 
-        try
-        {
-            UpdateStatus($"Running job '{job.Name}'...");
+        var activeJobs = new ObservableCollection<ActiveJob>();
 
-            // Run async to avoid freezing UI
-            Task.Run(() =>
+        if (activeJobsList != null)
+            activeJobsList.ItemsSource = activeJobs;
+
+        UpdateStatus(selectedJobs.Count == 1
+            ? $"Running job '{selectedJobs[0].Name}'..."
+            : $"Running {selectedJobs.Count} jobs...");
+
+        Task.Run(() =>
+        {
+            foreach (var job in selectedJobs)
             {
+                ActiveJob? activeJob = null;
+
                 try
                 {
-                    ActiveJob activeJob = _viewModel.CreateActiveJob(job);
+                    activeJob = _viewModel.CreateActiveJob(job);
+
+                    Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        activeJobs.Add(activeJob);
+                    });
+
                     _viewModel.RunJob(activeJob);
 
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        UpdateStatus($"Job '{job.Name}' completed");
-                        RefreshJobList();
+                        activeJobs.Remove(activeJob);
                     });
                 }
                 catch (Exception ex)
                 {
                     Dispatcher.UIThread.InvokeAsync(() =>
-                        UpdateStatus($"Error running job: {ex.Message}")
-                    );
+                    {
+                        if (activeJob != null)
+                            activeJobs.Remove(activeJob);
+
+                        UpdateStatus($"Error running job '{job.Name}': {ex.Message}");
+                    });
                 }
+            }
+
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                UpdateStatus("Selected jobs completed");
+                RefreshJobList();
             });
-        }
-        catch (Exception ex)
-        {
-            UpdateStatus($"Error: {ex.Message}");
-        }
+        });
     }
 
     private void DeleteJobButton_Click(object? sender, RoutedEventArgs e)

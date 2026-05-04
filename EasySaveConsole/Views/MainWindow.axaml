@@ -45,7 +45,7 @@
             <StackPanel Grid.Column="1" Spacing="8">
                 <TextBlock Text="Backup Jobs" FontSize="14" FontWeight="Bold" />
 
-                <ListBox x:Name="JobsList" Height="250">
+                <ListBox x:Name="JobsList" Height="250" SelectionMode="Multiple">
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="local:BackupJob">
                             <StackPanel Margin="4">
@@ -65,7 +65,7 @@
         </Grid>
 
         <!-- Progress Section -->
-        <DockPanel DockPanel.Dock="Top" Margin="12" Height="80">
+        <DockPanel DockPanel.Dock="Top" Margin="12" Height="100">
             <TextBlock DockPanel.Dock="Top" Text="Running Jobs:" FontWeight="Bold" />
             <ListBox x:Name="ActiveJobsList">
                 <ListBox.ItemTemplate>
