@@ -114,6 +114,7 @@ Welcome to EasySave! This console application allows you to easily configure, ma
 1. Open your terminal and navigate to the application folder.
 2. Run the application using the command: `dotnet run`
 3. **Language Selection**: Upon startup, you will be prompted to choose your preferred language. Type `en` for English or `fr` for French and press Enter.
+4. **Format Selection**: you will also be prompted to choose your preferred format for the log files. Type `xml` for XML format or `json` for JSON format and press Enter.
 
 ## Main Menu
 
