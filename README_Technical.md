@@ -1,7 +1,7 @@
 # EasySave - Technical Note
 
 ## Version
-V1.0.0
+V1.1.0
 
 
 ## Overview
@@ -47,7 +47,7 @@ The application features two distinct logging mechanisms:
     - **Content**: Records every file transfer, including source, destination, size, and transfer duration.
     - **Formats**: Natively supports both **JSON** and **XML** formats for easy integration with monitoring tools.
 
-2.  **State Logging**: A simple JSON file is used to track the state of running jobs. This log records the progress (files remaining, total size, etc.) and status (e.g., `ACTIVE`, `COMPLETED`) of each job as it runs. This allows for potential future features like pausing or resuming jobs.
+2.  **State Logging**: A simple file (JSON or XML format) is used to track the state of running jobs. This log records the progress (files remaining, total size, etc.) and status (e.g., `ACTIVE`, `INACTIVE`) of each job as it runs. This allows for potential future features like pausing or resuming jobs.
 
 
 ## Coding Conventions
