@@ -6,10 +6,12 @@ namespace EasySaveConsole
     public sealed class CopyEngine
     {
         private readonly EasyLogger _logger;
+        private readonly Settings _settings;
 
         public CopyEngine(Settings settings)
         {
             _logger = EasyLogger.GetInstance(settings.EasyLogSettings.DirectoryPath, settings.DateFormat, settings.DefaultFileFormat);
+            _settings = settings;
         }
 
         public void Execute(
@@ -33,6 +35,10 @@ namespace EasySaveConsole
 
             foreach (DirectoryEntry dir in plan.Directories)
             {
+                if (IsExcludedProcessRunning())
+                {
+                    throw new OperationCanceledException(LanguageService.T("error.copyengine.process.stopped"));
+                }
                 string destDir = Path.Combine(plan.TargetRoot, dir.RelativePath);
 
                 if (createdDirectories.Add(destDir) && !Directory.Exists(destDir))
@@ -47,6 +53,11 @@ namespace EasySaveConsole
 
             foreach (FileEntry file in plan.Files)
             {
+                if (IsExcludedProcessRunning())
+                {
+                    throw new OperationCanceledException(LanguageService.T("error.copyengine.process.stopped"));
+                }
+
                 string destFile = Path.Combine(plan.TargetRoot, file.RelativePath);
                 string? destDir = Path.GetDirectoryName(destFile);
 
@@ -74,6 +85,44 @@ namespace EasySaveConsole
                 OnFileCopied?.Invoke(file, destFile, transferMs);
             }
         }
+
+        private bool IsExcludedProcessRunning()
+        {
+            string excludedProcesses = _settings.ProcessExclusionSettings.ExcludedProcesses;
+            
+            if (string.IsNullOrWhiteSpace(excludedProcesses))
+            {
+                return false;
+            }
+
+            var processNames = excludedProcesses
+                .Split(new[] { '\n', '\r', ',' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(p => p.Trim().ToLowerInvariant())
+                .Where(p => !string.IsNullOrEmpty(p))
+                .ToHashSet();
+
+            var runningProcesses = Process.GetProcesses();
+            
+            foreach (var process in runningProcesses)
+            {
+                try
+                {
+                    string processName = Path.GetFileNameWithoutExtension(process.ProcessName).ToLowerInvariant();
+                    
+                    if (processNames.Contains(processName))
+                    {
+                        return true;
+                    }
+                }
+                catch
+                {
+                    throw new InvalidOperationException(LanguageService.T("error.copyengine.processcheck"));
+                }
+            }
+
+            return false;
+        }
+
 
         private static double CopyFileWithTiming(string sourceFile, string destFile, bool type, bool encrypt)
         {

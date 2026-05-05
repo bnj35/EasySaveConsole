@@ -48,7 +48,13 @@
     "log.dir.label": "Log Directory:",
     "status.path.label": "Status File Path:",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "excludes":{
+      "processes":{
+        "label":"Excluded Processes",
+        "exit":"Copy operation stopped: excluded process is running."
+      }
+    }
   },
   "error": {
     "lang": {
@@ -113,5 +119,11 @@
     "cryptosoft": {
       "failed": "Error during CryptoSoft execution for file. Error code: {0}"
     }
+  },
+  "run":{
+    "running":{
+      "named":"Running job:"
+    }
   }
+
 }

@@ -89,8 +89,6 @@ public class ActiveJob : BackupJob
 
     public void RunJob(CopyEngine engine)
     {
-        Console.WriteLine(string.Format(LanguageService.T("run.running.named"), Name));
-
         PathGuard.IsLooping(SourceDir, TargetDir);
 
         CopyPlan plan = CopyPlanner.Build(SourceDir, TargetDir);

@@ -27,6 +27,7 @@ public partial class SettingsWindow : Window
         LogFormatCombo.SelectedIndex = _settings.DefaultFileFormat == "xml" ? 1 : 0;
         LogDirInput.Text = _settings.EasyLogSettings.DirectoryPath;
         StatusPathInput.Text = _settings.StatusFileSettings.FilePath;
+        ExcludeProcessesInput.Text = _settings.ProcessExclusionSettings.ExcludedProcesses;
 
         SaveButton.Click += SaveButton_Click;
         CancelButton.Click += (_, _) => Close(false);
@@ -44,6 +45,8 @@ public partial class SettingsWindow : Window
         _settings.DefaultFileFormat = LogFormatCombo.SelectedIndex == 1 ? "xml" : "json";
         _settings.EasyLogSettings.DirectoryPath = LogDirInput.Text ?? _settings.EasyLogSettings.DirectoryPath;
         _settings.StatusFileSettings.FilePath = StatusPathInput.Text ?? _settings.StatusFileSettings.FilePath;
+        _settings.ProcessExclusionSettings.ExcludedProcesses = ExcludeProcessesInput.Text ?? "";
+
 
         PersistSettings();
         Close(true);
@@ -58,7 +61,9 @@ public partial class SettingsWindow : Window
                 defaultFileFormat = _settings.DefaultFileFormat,
                 dateFormat = _settings.DateFormat,
                 statusFileSettings = new { filePath = _settings.StatusFileSettings.FilePath },
-                easyLogSettings = new { directoryPath = _settings.EasyLogSettings.DirectoryPath }
+                easyLogSettings = new { directoryPath = _settings.EasyLogSettings.DirectoryPath },
+                processExclusionSettings = new { excludedProcesses = _settings.ProcessExclusionSettings.ExcludedProcesses }
+
             };
             File.WriteAllText("./appsettings.json", JsonSerializer.Serialize(data, _jsonOptions));
         }

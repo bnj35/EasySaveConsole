@@ -48,7 +48,13 @@
     "log.dir.label": "Répertoire des logs :",
     "status.path.label": "Chemin du fichier de statut :",
     "save": "Enregistrer",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "excludes":{
+      "processes":{
+        "label":"Process exclus",
+        "exit":"Opération de copie stoppé: un process exclus est en cours"
+      }
+    }
   },
   "error": {
     "lang": {
@@ -112,6 +118,11 @@
     },
     "cryptosoft": {
       "failed": "Erreur lors de l'exécution de CryptoSoft pour le fichier. Code d'erreur : {0}"
+    }
+  },
+  "run":{
+    "running":{
+      "named":"lancement du job:"
     }
   }
 }
