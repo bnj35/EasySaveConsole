@@ -22,18 +22,12 @@ public partial class MainWindow : Window
         if (_viewModel == null)
             return;
 
-        // Populate initial job list
+        SettingsButton.Click += SettingsButton_Click;
+        CreateJobButton.Click += CreateJobButton_Click;
+        RunSelectedButton.Click += RunSelectedButton_Click;
+        DeleteJobButton.Click += DeleteJobButton_Click;
+
         RefreshJobList();
-
-        // Wire button events
-        if (this.FindControl<Button>("CreateJobButton") is Button createBtn)
-            createBtn.Click += CreateJobButton_Click;
-
-        if (this.FindControl<Button>("RunSelectedButton") is Button runBtn)
-            runBtn.Click += RunSelectedButton_Click;
-
-        if (this.FindControl<Button>("DeleteJobButton") is Button delBtn)
-            delBtn.Click += DeleteJobButton_Click;
     }
 
     private void CreateJobButton_Click(object? sender, RoutedEventArgs e)
@@ -41,38 +35,31 @@ public partial class MainWindow : Window
         if (_viewModel == null)
             return;
 
-        var nameInput = this.FindControl<TextBox>("JobNameInput");
-        var sourceInput = this.FindControl<TextBox>("SourceDirInput");
-        var targetInput = this.FindControl<TextBox>("TargetDirInput");
-        var typeCombo = this.FindControl<ComboBox>("BackupTypeCombo");
-        var encryptCheck = this.FindControl<CheckBox>("EncryptCheck");
-
-        string name = nameInput?.Text ?? "";
-        string source = sourceInput?.Text ?? "";
-        string target = targetInput?.Text ?? "";
-        bool isFullBackup = typeCombo?.SelectedIndex != 1;
-        bool encrypt = encryptCheck?.IsChecked ?? false;
+        string name = JobNameInput.Text ?? "";
+        string source = SourceDirInput.Text ?? "";
+        string target = TargetDirInput.Text ?? "";
+        bool isFullBackup = BackupTypeCombo.SelectedIndex != 1;
+        bool encrypt = EncryptCheck?.IsChecked ?? false;
 
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(source) || string.IsNullOrWhiteSpace(target))
         {
-            UpdateStatus("Please fill all fields");
+            UpdateStatus(LanguageService.T("main.status.fill.fields"));
             return;
         }
 
         try
         {
             _viewModel.CreateJob(name, source, target, isFullBackup, encrypt);
-            UpdateStatus($"Job '{name}' created successfully");
+            UpdateStatus(string.Format(LanguageService.T("main.status.job.created"), name));
             RefreshJobList();
 
-            // Clear inputs
-            if (nameInput != null) nameInput.Text = "";
-            if (sourceInput != null) sourceInput.Text = "";
-            if (targetInput != null) targetInput.Text = "";
+            JobNameInput.Text = "";
+            SourceDirInput.Text = "";
+            TargetDirInput.Text = "";
         }
         catch (Exception ex)
         {
-            UpdateStatus($"Error: {ex.Message}");
+            UpdateStatus(string.Format(LanguageService.T("main.status.error"), ex.Message));
         }
     }
 
@@ -81,24 +68,20 @@ public partial class MainWindow : Window
         if (_viewModel == null)
             return;
 
-        var jobsList = this.FindControl<ListBox>("JobsList");
-        var activeJobsList = this.FindControl<ListBox>("ActiveJobsList");
-        var selectedJobs = jobsList?.SelectedItems?.OfType<BackupJob>().ToList() ?? [];
+        var selectedJobs = JobsList.SelectedItems?.OfType<BackupJob>().ToList() ?? [];
 
         if (selectedJobs.Count == 0)
         {
-            UpdateStatus("Please select one or more jobs to run");
+            UpdateStatus(LanguageService.T("main.status.select.run"));
             return;
         }
 
         var activeJobs = new ObservableCollection<ActiveJob>();
-
-        if (activeJobsList != null)
-            activeJobsList.ItemsSource = activeJobs;
+        ActiveJobsList.ItemsSource = activeJobs;
 
         UpdateStatus(selectedJobs.Count == 1
-            ? $"Running job '{selectedJobs[0].Name}'..."
-            : $"Running {selectedJobs.Count} jobs...");
+            ? string.Format(LanguageService.T("main.status.running.one"), selectedJobs[0].Name)
+            : string.Format(LanguageService.T("main.status.running.multiple"), selectedJobs.Count));
 
         Task.Run(() =>
         {
@@ -129,14 +112,14 @@ public partial class MainWindow : Window
                         if (activeJob != null)
                             activeJobs.Remove(activeJob);
 
-                        UpdateStatus($"Error running job '{job.Name}': {ex.Message}");
+                        UpdateStatus(string.Format(LanguageService.T("main.status.error.run"), job.Name, ex.Message));
                     });
                 }
             }
 
             Dispatcher.UIThread.InvokeAsync(() =>
             {
-                UpdateStatus("Selected jobs completed");
+                UpdateStatus(LanguageService.T("main.status.completed"));
                 RefreshJobList();
             });
         });
@@ -144,20 +127,31 @@ public partial class MainWindow : Window
 
     private void DeleteJobButton_Click(object? sender, RoutedEventArgs e)
     {
-        if (_viewModel == null)
-            return;
-            
-        var jobsList = this.FindControl<ListBox>("JobsList");
-        if (jobsList?.SelectedItem is BackupJob job)
+        if (JobsList.SelectedItem is BackupJob job)
         {
-            int index = _viewModel.GetAllJobs().ToList().IndexOf(job);
+            int index = _viewModel!.GetAllJobs().ToList().IndexOf(job);
             _viewModel.DeleteJob(index + 1);
-            UpdateStatus($"Job '{job.Name}' deleted");
+            UpdateStatus(string.Format(LanguageService.T("main.status.job.deleted"), job.Name));
             RefreshJobList();
         }
         else
         {
-            UpdateStatus("Please select a job to delete");
+            UpdateStatus(LanguageService.T("main.status.select.delete"));
+        }
+    }
+
+    private async void SettingsButton_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_viewModel == null)
+            return;
+
+        var settingsWindow = new SettingsWindow(_viewModel.Settings, _viewModel.Language);
+        var saved = await settingsWindow.ShowDialog<bool?>(this);
+
+        if (saved == true)
+        {
+            _viewModel.Language = settingsWindow.CurrentLanguage;
+            UpdateStatus(LanguageService.T("main.status.settings.saved"));
         }
     }
 
@@ -166,18 +160,8 @@ public partial class MainWindow : Window
         if (_viewModel == null)
             return;
 
-        var jobsList = this.FindControl<ListBox>("JobsList");
-        if (jobsList != null)
-        {
-            var jobs = _viewModel.GetAllJobs().ToList();
-            jobsList.ItemsSource = new ObservableCollection<BackupJob>(jobs);
-        }
+        JobsList.ItemsSource = new ObservableCollection<BackupJob>(_viewModel.GetAllJobs());
     }
 
-    private void UpdateStatus(string message)
-    {
-        var statusLabel = this.FindControl<TextBlock>("StatusMessage");
-        if (statusLabel != null)
-            statusLabel.Text = message;
-    }
+    private void UpdateStatus(string message) => StatusMessage.Text = message;
 }

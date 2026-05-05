@@ -100,10 +100,6 @@ public class ActiveJob : BackupJob
         NumberFilesRemaining = NumberFiles;
         SizeFileRemaining = TotalFileSize;
 
-        Console.WriteLine(string.Format(LanguageService.T("active.total.size"), TotalFileSize));
-        Console.WriteLine(string.Format(LanguageService.T("active.total.files"), NumberFiles));
-        Console.WriteLine();
-
         engine.Execute(
             plan,
             Name,
@@ -132,7 +128,6 @@ public class ActiveJob : BackupJob
         );
         Console.WriteLine();
         float totalCopied = plan.TotalBytes - SizeFileRemaining;
-        Console.WriteLine(string.Format(LanguageService.T("active.total.copied"), totalCopied));
 
     }
 

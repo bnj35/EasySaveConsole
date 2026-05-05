@@ -1,33 +1,36 @@
-public sealed class CopyPlan
+namespace EasySaveConsole
 {
-    public required string SourceRoot {get; init; }//set uniquement à la création de l'objet
-    public required string TargetRoot {get; init; }
-
-    public List<DirectoryEntry> Directories {get;} = new();
-
-    public List<FileEntry> Files {get; } = new() ;
-
-    public int TotalBytes { get; set;}
-
-    public int TotalFiles => Files.Count;
-
-    [System.Diagnostics.CodeAnalysis.SetsRequiredMembers] // pour avoir les required -> ne marche pas sans 🤷🏼
-    public CopyPlan(string sourceRoot, string targetRoot)
+    public sealed class CopyPlan
     {
-        SourceRoot = sourceRoot;
-        TargetRoot = targetRoot;
-    }
+        public required string SourceRoot { get; init; }//set uniquement à la création de l'objet
+        public required string TargetRoot { get; init; }
 
-    public void Validate()
-    {
-        if (string.IsNullOrWhiteSpace(SourceRoot))
+        public List<DirectoryEntry> Directories { get; } = new();
+
+        public List<FileEntry> Files { get; } = new();
+
+        public int TotalBytes { get; set; }
+
+        public int TotalFiles => Files.Count;
+
+        [System.Diagnostics.CodeAnalysis.SetsRequiredMembers] // pour avoir les required -> ne marche pas sans 🤷🏼
+        public CopyPlan(string sourceRoot, string targetRoot)
         {
-            throw new InvalidOperationException(LanguageService.T("error.copyplan.source.empty"));
+            SourceRoot = sourceRoot;
+            TargetRoot = targetRoot;
         }
 
-        if (string.IsNullOrWhiteSpace(TargetRoot))
+        public void Validate()
         {
-            throw new InvalidOperationException(LanguageService.T("error.copyplan.target.empty"));
+            if (string.IsNullOrWhiteSpace(SourceRoot))
+            {
+                throw new InvalidOperationException(LanguageService.T("error.copyplan.source.empty"));
+            }
+
+            if (string.IsNullOrWhiteSpace(TargetRoot))
+            {
+                throw new InvalidOperationException(LanguageService.T("error.copyplan.target.empty"));
+            }
         }
     }
 }

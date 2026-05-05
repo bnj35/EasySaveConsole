@@ -11,6 +11,8 @@ public sealed class MainViewModel
     private readonly CopyEngine _copyEngine;
 
     public string StatusMessage { get; set; } = "Ready";
+    public Settings Settings { get; }
+    public string Language { get; set; } = "en";
 
     public MainViewModel(Joblist jobList, Settings settings, string logFileFormat)
     {
@@ -22,6 +24,7 @@ public sealed class MainViewModel
         {
             _jobList = jobList;
         }
+        Settings = settings;
         _statusLogger = new StatusLogger(settings, logFileFormat);
         _copyEngine = new CopyEngine(settings);
     }
