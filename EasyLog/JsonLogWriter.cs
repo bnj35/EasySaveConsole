@@ -21,12 +21,26 @@ public class JsonLogWriter : ILogWriter
         List<JsonElement> entries = [];
         if (File.Exists(fullPath))
         {
-            entries = JsonSerializer.Deserialize<List<JsonElement>>(File.ReadAllText(fullPath)) ?? [];
+            string existingJson = File.ReadAllText(fullPath);
+
+            if (!string.IsNullOrWhiteSpace(existingJson))
+            {
+                try
+                {
+                    entries = JsonSerializer.Deserialize<List<JsonElement>>(existingJson) ?? [];
+                }
+                catch (JsonException)
+                {
+                    entries = [];
+                }
+            }
         }
 
         entries.Add(JsonSerializer.SerializeToElement(entry, entry.GetType()));
 
         string json = JsonSerializer.Serialize(entries, new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText(fullPath, json);
+        string tempPath = Path.Combine(logDirectory, $".{fileName}.{Guid.NewGuid():N}.tmp");
+        File.WriteAllText(tempPath, json);
+        File.Move(tempPath, fullPath, true);
     }
 }

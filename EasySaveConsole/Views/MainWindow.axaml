@@ -1,9 +1,9 @@
 <Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="using:EasySaveConsole"
-        x:Class="EasySaveConsole.MainWindow"
-        Width="900" Height="600"
-        Title="{Binding [main.title], Source={x:Static local:LanguageService.Instance}}">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:EasySaveConsole"
+    x:Class="EasySaveConsole.MainWindow"
+    Width="900" Height="650"
+    Title="{Binding [main.title], Source={x:Static local:LanguageService.Instance}}">
     <Window.Resources>
         <local:RemainingFilesConverter x:Key="RemainingFilesConverter" />
     </Window.Resources>
@@ -11,63 +11,74 @@
         <!-- Title Bar -->
         <DockPanel DockPanel.Dock="Top" Margin="12">
             <Button x:Name="SettingsButton"
-                    Content="{Binding [main.settings.button], Source={x:Static local:LanguageService.Instance}}"
-                    DockPanel.Dock="Right" Padding="10,4" />
-            <TextBlock Text="{Binding [main.title], Source={x:Static local:LanguageService.Instance}}"
-                       FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
+                Content="{Binding [main.settings.button], Source={x:Static local:LanguageService.Instance}}"
+                DockPanel.Dock="Right" Padding="10,4" />
+            <TextBlock
+                Text="{Binding [main.title], Source={x:Static local:LanguageService.Instance}}"
+                FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
         </DockPanel>
 
         <!-- Main Content -->
         <Grid DockPanel.Dock="Top" Margin="12" ColumnDefinitions="*,*">
             <!-- Left: Job Creation -->
             <StackPanel Grid.Column="0" Margin="0,0,12,0" Spacing="8">
-                <TextBlock Text="{Binding [main.jobs.create.section], Source={x:Static local:LanguageService.Instance}}"
-                           FontSize="14" FontWeight="Bold" />
+                <TextBlock
+                    Text="{Binding [main.jobs.create.section], Source={x:Static local:LanguageService.Instance}}"
+                    FontSize="14" FontWeight="Bold" />
 
                 <StackPanel Spacing="4">
-                    <TextBlock Text="{Binding [main.jobs.create.name.label], Source={x:Static local:LanguageService.Instance}}" />
+                    <TextBlock
+                        Text="{Binding [main.jobs.create.name.label], Source={x:Static local:LanguageService.Instance}}" />
                     <TextBox x:Name="JobNameInput"
-                             PlaceholderText="{Binding [main.jobs.create.name.placeholder], Source={x:Static local:LanguageService.Instance}}" />
+                        PlaceholderText="{Binding [main.jobs.create.name.placeholder], Source={x:Static local:LanguageService.Instance}}" />
                 </StackPanel>
 
                 <StackPanel Spacing="4">
-                    <TextBlock Text="{Binding [main.jobs.create.source.label], Source={x:Static local:LanguageService.Instance}}" />
+                    <TextBlock
+                        Text="{Binding [main.jobs.create.source.label], Source={x:Static local:LanguageService.Instance}}" />
                     <TextBox x:Name="SourceDirInput"
-                             PlaceholderText="{Binding [main.jobs.create.path.placeholder], Source={x:Static local:LanguageService.Instance}}" />
+                        PlaceholderText="{Binding [main.jobs.create.path.placeholder], Source={x:Static local:LanguageService.Instance}}" />
                 </StackPanel>
 
                 <StackPanel Spacing="4">
-                    <TextBlock Text="{Binding [main.jobs.create.target.label], Source={x:Static local:LanguageService.Instance}}" />
+                    <TextBlock
+                        Text="{Binding [main.jobs.create.target.label], Source={x:Static local:LanguageService.Instance}}" />
                     <TextBox x:Name="TargetDirInput"
-                             PlaceholderText="{Binding [main.jobs.create.path.placeholder], Source={x:Static local:LanguageService.Instance}}" />
+                        PlaceholderText="{Binding [main.jobs.create.path.placeholder], Source={x:Static local:LanguageService.Instance}}" />
                 </StackPanel>
 
                 <StackPanel Spacing="4">
-                    <TextBlock Text="{Binding [main.jobs.create.type.label], Source={x:Static local:LanguageService.Instance}}" />
+                    <TextBlock
+                        Text="{Binding [main.jobs.create.type.label], Source={x:Static local:LanguageService.Instance}}" />
                     <ComboBox x:Name="BackupTypeCombo">
-                        <ComboBoxItem Content="{Binding [main.jobs.create.type.full], Source={x:Static local:LanguageService.Instance}}" />
-                        <ComboBoxItem Content="{Binding [main.jobs.create.type.incremental], Source={x:Static local:LanguageService.Instance}}" />
+                        <ComboBoxItem
+                            Content="{Binding [main.jobs.create.type.full], Source={x:Static local:LanguageService.Instance}}" />
+                        <ComboBoxItem
+                            Content="{Binding [main.jobs.create.type.differential], Source={x:Static local:LanguageService.Instance}}" />
                     </ComboBox>
                 </StackPanel>
 
-                <CheckBox x:Name="EncryptCheck" Content="{Binding [main.jobs.create.encrypt], Source={x:Static local:LanguageService.Instance}}" />
+                <CheckBox x:Name="EncryptCheck"
+                    Content="{Binding [main.jobs.create.encrypt], Source={x:Static local:LanguageService.Instance}}" />
 
                 <Button x:Name="CreateJobButton"
-                        Content="{Binding [main.jobs.create.button], Source={x:Static local:LanguageService.Instance}}"
-                        Padding="8,4" />
+                    Content="{Binding [main.jobs.create.button], Source={x:Static local:LanguageService.Instance}}"
+                    Padding="8,4" />
             </StackPanel>
 
             <!-- Right: Job List & Actions -->
             <StackPanel Grid.Column="1" Spacing="8">
-                <TextBlock Text="{Binding [main.jobs.list.section], Source={x:Static local:LanguageService.Instance}}"
-                           FontSize="14" FontWeight="Bold" />
+                <TextBlock
+                    Text="{Binding [main.jobs.list.section], Source={x:Static local:LanguageService.Instance}}"
+                    FontSize="14" FontWeight="Bold" />
 
                 <ListBox x:Name="JobsList" Height="250" SelectionMode="Multiple">
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="local:BackupJob">
                             <StackPanel Margin="4">
                                 <TextBlock Text="{Binding Name}" FontWeight="Bold" />
-                                <TextBlock Text="{Binding SourceDir}" FontSize="11" Foreground="Gray" />
+                                <TextBlock Text="{Binding SourceDir}" FontSize="11"
+                                    Foreground="Gray" />
                             </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
@@ -75,28 +86,30 @@
 
                 <StackPanel Spacing="4" Orientation="Horizontal">
                     <Button x:Name="RunSelectedButton"
-                            Content="{Binding [main.jobs.list.run], Source={x:Static local:LanguageService.Instance}}"
-                            Padding="8,4" />
+                        Content="{Binding [main.jobs.list.run], Source={x:Static local:LanguageService.Instance}}"
+                        Padding="8,4" />
                     <Button x:Name="DeleteJobButton"
-                            Content="{Binding [main.jobs.list.delete], Source={x:Static local:LanguageService.Instance}}"
-                            Padding="8,4" />
+                        Content="{Binding [main.jobs.list.delete], Source={x:Static local:LanguageService.Instance}}"
+                        Padding="8,4" />
                 </StackPanel>
             </StackPanel>
         </Grid>
 
         <!-- Progress Section -->
-        <DockPanel DockPanel.Dock="Top" Margin="12" Height="100">
-            <TextBlock Text="{Binding [main.jobs.list.running], Source={x:Static local:LanguageService.Instance}}"
-                       DockPanel.Dock="Top" FontWeight="Bold" />
+        <DockPanel DockPanel.Dock="Top" Margin="12" Height="200">
+            <TextBlock
+                Text="{Binding [main.jobs.list.running], Source={x:Static local:LanguageService.Instance}}"
+                DockPanel.Dock="Top" FontWeight="Bold" />
             <ListBox x:Name="ActiveJobsList">
                 <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="local:ActiveJob">
                         <StackPanel Margin="4" Spacing="4">
                             <TextBlock Text="{Binding Name}" FontWeight="Bold" />
-                            <ProgressBar Value="{Binding Progression}" Height="12" />
+                                <TextBlock Text="{Binding PhaseMessage}" FontSize="11" />
+                                <ProgressBar Value="{Binding Progression}" IsIndeterminate="{Binding IsPlanning}" Height="12" />
                             <TextBlock
-                                Text="{Binding NumberFilesRemaining, Converter={StaticResource RemainingFilesConverter}}"
-                                FontSize="11" />
+                                    Text="{Binding NumberFilesRemaining, Converter={StaticResource RemainingFilesConverter}}"
+                                    FontSize="11" />
                         </StackPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>

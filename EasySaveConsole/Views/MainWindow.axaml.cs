@@ -85,6 +85,8 @@ public partial class MainWindow : Window
 
         Task.Run(() =>
         {
+            bool allJobsSucceeded = true;
+
             foreach (var job in selectedJobs)
             {
                 ActiveJob? activeJob = null;
@@ -107,6 +109,8 @@ public partial class MainWindow : Window
                 }
                 catch (Exception ex)
                 {
+                    allJobsSucceeded = false;
+
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         if (activeJob != null)
@@ -117,11 +121,21 @@ public partial class MainWindow : Window
                 }
             }
 
-            Dispatcher.UIThread.InvokeAsync(() =>
+            if (allJobsSucceeded)
             {
-                UpdateStatus(LanguageService.T("main.status.completed"));
-                RefreshJobList();
-            });
+                Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    UpdateStatus(LanguageService.T("main.status.completed"));
+                    RefreshJobList();
+                });
+            }
+            else
+            {
+                Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    RefreshJobList();
+                });
+            }
         });
     }
 

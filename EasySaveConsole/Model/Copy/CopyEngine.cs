@@ -6,10 +6,12 @@ namespace EasySaveConsole
     public sealed class CopyEngine
     {
         private readonly EasyLogger _logger;
+        private readonly Settings _settings;
 
         public CopyEngine(Settings settings)
         {
             _logger = EasyLogger.GetInstance(settings.EasyLogSettings.DirectoryPath, settings.DateFormat, settings.DefaultFileFormat);
+            _settings = settings;
         }
 
         public void Execute(
@@ -17,6 +19,7 @@ namespace EasySaveConsole
             string jobName,
             bool type,
             bool encrypt,
+            CancellationToken cancellationToken = default,
             Action<double>? OnProgressPercent = null,
             Action<int, int>? OnRemainingChanged = null,
             Action<FileEntry, string, double>? OnFileCopied = null
@@ -29,49 +32,81 @@ namespace EasySaveConsole
 
             Directory.CreateDirectory(plan.TargetRoot);
 
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            string[] excludedProcesses = GetExcludedProcesses();
+            Task? processMonitorTask = excludedProcesses.Length == 0
+                ? null
+                : CheckProcess(excludedProcesses, linkedCts);
+
             var createdDirectories = new HashSet<string>(GetPathComparer());
 
-            foreach (DirectoryEntry dir in plan.Directories)
+            try
             {
-                string destDir = Path.Combine(plan.TargetRoot, dir.RelativePath);
-
-                if (createdDirectories.Add(destDir) && !Directory.Exists(destDir))
+                foreach (DirectoryEntry dir in plan.Directories)
                 {
-                    Directory.CreateDirectory(destDir);
-                    _logger.LogDirectoryCreation(jobName, destDir);
+                    linkedCts.Token.ThrowIfCancellationRequested();
+
+                    string destDir = Path.Combine(plan.TargetRoot, dir.RelativePath);
+
+                    if (createdDirectories.Add(destDir) && !Directory.Exists(destDir))
+                    {
+                        Directory.CreateDirectory(destDir);
+                        _logger.LogDirectoryCreation(jobName, destDir);
+                    }
+                }
+
+                int remainingBytes = plan.TotalBytes;
+                int remainingFiles = plan.TotalFiles;
+
+                foreach (FileEntry file in plan.Files)
+                {
+                    linkedCts.Token.ThrowIfCancellationRequested();
+
+                    string destFile = Path.Combine(plan.TargetRoot, file.RelativePath);
+                    string? destDir = Path.GetDirectoryName(destFile);
+
+                    if (!string.IsNullOrEmpty(destDir) && createdDirectories.Add(destDir) && !Directory.Exists(destDir))
+                    {
+                        Directory.CreateDirectory(destDir);
+                        _logger.LogDirectoryCreation(jobName, destDir);
+                    }
+
+                    double transferMs = CopyFileWithTiming(file.SourceFullPath, destFile, type, encrypt);
+
+                    remainingBytes -= (int)file.LengthBytes;
+                    remainingFiles--;
+
+                    OnRemainingChanged?.Invoke(remainingFiles, remainingBytes);
+
+                    if (plan.TotalBytes > 0)
+                    {
+                        double done = (double)(plan.TotalBytes - remainingBytes) / plan.TotalBytes;
+                        OnProgressPercent?.Invoke(done * 100.0);
+                    }
+
+                    _logger.LogFileCopy(jobName, file.SourceFullPath, destFile, file.LengthBytes, transferMs);
+
+                    OnFileCopied?.Invoke(file, destFile, transferMs);
                 }
             }
-
-            int remainingBytes = plan.TotalBytes;
-            int remainingFiles = plan.TotalFiles;
-
-            foreach (FileEntry file in plan.Files)
+            catch (OperationCanceledException) when (linkedCts.IsCancellationRequested)
             {
-                string destFile = Path.Combine(plan.TargetRoot, file.RelativePath);
-                string? destDir = Path.GetDirectoryName(destFile);
+                throw new OperationCanceledException(LanguageService.T("settings.excludes.processes.exit"), linkedCts.Token);
+            }
+            finally
+            {
+                linkedCts.Cancel();
 
-                if (!string.IsNullOrEmpty(destDir) && createdDirectories.Add(destDir) && !Directory.Exists(destDir))
+                if (processMonitorTask != null)
                 {
-                    Directory.CreateDirectory(destDir);
-                    _logger.LogDirectoryCreation(jobName, destDir);
+                    try
+                    {
+                        processMonitorTask.GetAwaiter().GetResult();
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
                 }
-
-                double transferMs = CopyFileWithTiming(file.SourceFullPath, destFile, type, encrypt);
-
-                remainingBytes -= (int)file.LengthBytes;
-                remainingFiles--;
-
-                OnRemainingChanged?.Invoke(remainingFiles, remainingBytes);
-
-                if (plan.TotalBytes > 0)
-                {
-                    double done = (double)(plan.TotalBytes - remainingBytes) / plan.TotalBytes;
-                    OnProgressPercent?.Invoke(done * 100.0);
-                }
-
-                _logger.LogFileCopy(jobName, file.SourceFullPath, destFile, file.LengthBytes, transferMs);
-
-                OnFileCopied?.Invoke(file, destFile, transferMs);
             }
         }
 
@@ -131,6 +166,69 @@ namespace EasySaveConsole
         {
             var comparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
             return comparer;
+        }
+
+
+        private string[] GetExcludedProcesses()
+        {
+            string excludedProcesses = _settings.ProcessExclusionSettings.ExcludedProcesses;
+
+            if (string.IsNullOrWhiteSpace(excludedProcesses))
+            {
+                return [];
+            }
+
+            return excludedProcesses
+                .Split(new[] { '\n', '\r', ',' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(p => p.Trim().ToLowerInvariant())
+                .Where(p => !string.IsNullOrWhiteSpace(p))
+                .ToArray();
+        }
+
+        private static async Task CheckProcess(string[] excludedProcesses, CancellationTokenSource cancellationSource)
+        {
+            using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(500));
+
+            while (!cancellationSource.IsCancellationRequested && await timer.WaitForNextTickAsync(cancellationSource.Token).ConfigureAwait(false))
+            {
+                if (IsExcludedProcessRunning(excludedProcesses))
+                {
+                    cancellationSource.Cancel();
+                    return;
+                }
+            }
+        }
+
+        private static bool IsExcludedProcessRunning(IEnumerable<string> excludedProcesses)
+        {
+            HashSet<string> processNames = excludedProcesses.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            if (processNames.Count == 0)
+            {
+                return false;
+            }
+
+            foreach (Process process in Process.GetProcesses())
+            {
+                try
+                {
+                    string processName = process.ProcessName.ToLowerInvariant();
+
+                    if (processNames.Contains(processName))
+                    {
+                        return true;
+                    }
+                }
+                catch
+                {
+                }
+                finally
+                {
+                    process.Dispose();
+                }
+            }
+
+            return false;
         }
     }
 }
