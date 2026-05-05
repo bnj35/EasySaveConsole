@@ -120,10 +120,15 @@
       "failed": "Error during CryptoSoft execution for file. Error code: {0}"
     }
   },
-  "run":{
-    "running":{
-      "named":"Running job:"
+  "run": {
+    "running": {
+      "named": "Running job:"
+    },
+    "phase": {
+      "planning": "Planning backup...",
+      "planning.detail": "Planning item {0}: {1}",
+      "copying": "Copying files...",
+      "completed": "Job completed"
     }
   }
-
 }

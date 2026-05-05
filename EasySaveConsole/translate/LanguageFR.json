@@ -120,9 +120,15 @@
       "failed": "Erreur lors de l'exécution de CryptoSoft pour le fichier. Code d'erreur : {0}"
     }
   },
-  "run":{
-    "running":{
-      "named":"lancement du job:"
+  "run": {
+    "running": {
+      "named": "lancement du job:"
+    },
+    "phase": {
+      "planning": "Préparation de la sauvegarde...",
+      "planning.detail": "Élément préparé {0} : {1}",
+      "copying": "Copie des fichiers...",
+      "completed": "Travail terminé"
     }
   }
 }
