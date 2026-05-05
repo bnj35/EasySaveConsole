@@ -10,6 +10,13 @@ public partial class SettingsWindow : Window
     private readonly Settings _settings;
     public string CurrentLanguage { get; private set; }
 
+    // Required for Avalonia for runtime loader
+    public SettingsWindow()
+    {
+        InitializeComponent();
+        _settings = new Settings();
+        CurrentLanguage = "en";
+    }
     public SettingsWindow(Settings settings, string currentLanguage)
     {
         InitializeComponent();
