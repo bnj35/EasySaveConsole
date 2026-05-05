@@ -50,10 +50,7 @@
                     </ComboBox>
                 </StackPanel>
 
-                <CheckBox x:Name="EncryptCheck" Content="Encrypt backup (CryptoSoft)" />
-
-
-                <CheckBox x:Name="EncryptCheck" Content="Encrypt backup (CryptoSoft)" />
+                <CheckBox x:Name="EncryptCheck" Content="{Binding [main.jobs.create.encrypt], Source={x:Static local:LanguageService.Instance}}" />
 
                 <Button x:Name="CreateJobButton"
                         Content="{Binding [main.jobs.create.button], Source={x:Static local:LanguageService.Instance}}"

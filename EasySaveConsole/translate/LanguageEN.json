@@ -13,6 +13,7 @@
         "type.label": "Backup Type:",
         "type.full": "Full Backup",
         "type.incremental": "Incremental",
+        "encrypt":"Encrypt backup (CryptoSoft)",
         "button": "Create Job"
       },
       "list": {
