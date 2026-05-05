@@ -115,7 +115,6 @@ public class ActiveJob : BackupJob
     public void RunJob(CopyEngine engine)
     {
         PathGuard.IsLooping(SourceDir, TargetDir);
-
         IsPlanning = true;
         PhaseMessage = LanguageService.T("run.phase.planning");
         PlanningItemsScanned = 0;
@@ -128,6 +127,7 @@ public class ActiveJob : BackupJob
                 PlanningItemsScanned = itemsScanned;
             }
         );
+        // pas de blocage
 
         IsPlanning = false;
         PhaseMessage = LanguageService.T("run.phase.copying");
@@ -146,6 +146,7 @@ public class ActiveJob : BackupJob
             OnProgressPercent: percent =>
             {
                 Progression = percent;
+                Console.WriteLine($"{percent}");// temp a enlever
             },
             OnRemainingChanged: (filesRemaining, bytesRemaining) =>
             {
