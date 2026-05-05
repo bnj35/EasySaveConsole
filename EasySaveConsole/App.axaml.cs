@@ -18,7 +18,7 @@ public partial class App : Application
         if (desktop != null)
         {
             // Initialize language, settings, and view model
-            LanguageService.Load("en");
+            LanguageService.Instance.Load("en");
             
             Settings settings = GetConfiguration();
             string logFileFormat = settings.DefaultFileFormat;

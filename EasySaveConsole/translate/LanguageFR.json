@@ -1,4 +1,52 @@
 {
+  "main": {
+    "title": "EasySave - Gestionnaire de sauvegardes",
+    "settings.button": "Paramètres",
+    "jobs": {
+      "create": {
+        "section": "Créer un nouveau travail",
+        "name.label": "Nom du travail :",
+        "name.placeholder": "Entrez le nom du travail",
+        "source.label": "Répertoire source :",
+        "path.placeholder": "Chemin complet",
+        "target.label": "Répertoire cible :",
+        "type.label": "Type de sauvegarde :",
+        "type.full": "Sauvegarde complète",
+        "type.incremental": "Incrémentale",
+        "button": "Créer le travail"
+      },
+      "list": {
+        "section": "Travaux de sauvegarde",
+        "run": "Exécuter la sélection",
+        "delete": "Supprimer",
+        "running": "Travaux en cours :"
+      },
+      "remaining.files": "Fichiers restants : {0}"
+    },
+    "status": {
+      "ready": "Prêt",
+      "settings.saved": "Paramètres enregistrés",
+      "job.created": "Travail '{0}' créé avec succès",
+      "job.deleted": "Travail '{0}' supprimé",
+      "running.one": "Exécution du travail '{0}'...",
+      "running.multiple": "Exécution de {0} travaux...",
+      "completed": "Travaux sélectionnés terminés",
+      "fill.fields": "Veuillez remplir tous les champs",
+      "select.run": "Veuillez sélectionner un ou plusieurs travaux à exécuter",
+      "select.delete": "Veuillez sélectionner un travail à supprimer",
+      "error": "Erreur : {0}",
+      "error.run": "Erreur lors de l'exécution du travail '{0}' : {1}"
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "language.label": "Langue :",
+    "log.format.label": "Format des fichiers de log :",
+    "log.dir.label": "Répertoire des logs :",
+    "status.path.label": "Chemin du fichier de statut :",
+    "save": "Enregistrer",
+    "cancel": "Annuler"
+  },
   "menu": {
     "title": "====== Bienvenue dans EasySave ========",
     "prompt": "Que voulez-vous faire ?",

@@ -1,14 +1,51 @@
 {
-  "menu": {
-    "title": "====== Welcome in EasySave ========",
-    "prompt": "What do you want to do ?",
-    "create": "1. Create a backup job",
-    "display": "2. Display all",
-    "search": "3. Search for a backup job",
-    "runMultiple": "4. Run multiple backup jobs",
-    "exit": "0. Press 0 to exit",
-    "separator": "===================================",
-    "choice": "Your choice: "
+  "main": {
+    "title": "EasySave - Backup Manager",
+    "settings.button": "Settings",
+    "jobs": {
+      "create": {
+        "section": "Create New Job",
+        "name.label": "Job Name:",
+        "name.placeholder": "Enter job name",
+        "source.label": "Source Directory:",
+        "path.placeholder": "Full path",
+        "target.label": "Target Directory:",
+        "type.label": "Backup Type:",
+        "type.full": "Full Backup",
+        "type.incremental": "Incremental",
+        "button": "Create Job"
+      },
+      "list": {
+        "section": "Backup Jobs",
+        "run": "Run Selected",
+        "delete": "Delete",
+        "running": "Running Jobs:"
+      },
+      "remaining.files": "Remaining files: {0}"
+    },
+    "status": {
+      "ready": "Ready",
+      "settings.saved": "Settings saved",
+      "job.created": "Job '{0}' created successfully",
+      "job.deleted": "Job '{0}' deleted",
+      "running.one": "Running job '{0}'...",
+      "running.multiple": "Running {0} jobs...",
+      "completed": "Selected jobs completed",
+      "fill.fields": "Please fill all fields",
+      "select.run": "Please select one or more jobs to run",
+      "select.delete": "Please select a job to delete",
+      "error": "Error: {0}",
+      "error.run": "Error running job '{0}': {1}"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "language.label": "Language:",
+    "log.format.label": "Log File Format:",
+    "log.dir.label": "Log Directory:",
+    "status.path.label": "Status File Path:",
+    "save": "Save",
+    "cancel": "Cancel"
   },
   "job": {
     "exit": "Thank you for using EasySave",

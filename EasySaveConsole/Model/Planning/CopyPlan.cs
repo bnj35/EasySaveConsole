@@ -1,3 +1,4 @@
+using EasySaveConsole;
 public sealed class CopyPlan
 {
     public required string SourceRoot {get; init; }//set uniquement à la création de l'objet
