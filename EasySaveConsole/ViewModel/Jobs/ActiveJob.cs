@@ -7,7 +7,6 @@ public class ActiveJob : BackupJob
     private float _totalFileSize;
     private bool _isPlanning;
     private string _phaseMessage = string.Empty;
-    private string _planningDetail = string.Empty;
     private int _planningItemsScanned;
 
     public float TotalFileSize
@@ -86,12 +85,6 @@ public class ActiveJob : BackupJob
         private set => SetProperty(ref _phaseMessage, value);
     }
 
-    public string PlanningDetail
-    {
-        get => _planningDetail;
-        private set => SetProperty(ref _planningDetail, value);
-    }
-
     public int PlanningItemsScanned
     {
         get => _planningItemsScanned;
@@ -116,7 +109,6 @@ public class ActiveJob : BackupJob
         Progression = 0.0;
         IsPlanning = false;
         PhaseMessage = string.Empty;
-        PlanningDetail = string.Empty;
         PlanningItemsScanned = 0;
     }
 
@@ -126,7 +118,6 @@ public class ActiveJob : BackupJob
 
         IsPlanning = true;
         PhaseMessage = LanguageService.T("run.phase.planning");
-        PlanningDetail = string.Empty;
         PlanningItemsScanned = 0;
 
         CopyPlan plan = CopyPlanner.Build(
@@ -135,7 +126,6 @@ public class ActiveJob : BackupJob
             (itemsScanned, currentPath) =>
             {
                 PlanningItemsScanned = itemsScanned;
-                PlanningDetail = string.Format(LanguageService.T("run.phase.planning.detail"), itemsScanned, currentPath);
             }
         );
 

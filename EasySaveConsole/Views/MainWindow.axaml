@@ -106,7 +106,6 @@
                         <StackPanel Margin="4" Spacing="4">
                             <TextBlock Text="{Binding Name}" FontWeight="Bold" />
                                 <TextBlock Text="{Binding PhaseMessage}" FontSize="11" />
-                                <TextBlock Text="{Binding PlanningDetail}" FontSize="11" Foreground="Gray" TextWrapping="Wrap" />
                                 <ProgressBar Value="{Binding Progression}" IsIndeterminate="{Binding IsPlanning}" Height="12" />
                             <TextBlock
                                     Text="{Binding NumberFilesRemaining, Converter={StaticResource RemainingFilesConverter}}"
