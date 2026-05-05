@@ -72,6 +72,14 @@ public class ActiveJob : BackupJob
         private set => SetProperty(ref _lastTransferMs, value);
     }
 
+    private double _lastEncryptionMs;
+
+    public double LastEncryptionMs
+    {
+        get => _lastEncryptionMs;
+        private set => SetProperty(ref _lastEncryptionMs, value);
+    }
+
 // to have a better display of the progression of the job, we need to know if it's in the planning phase or in the copying phase, and to have some details about the planning phase (like how many items have been scanned)
     public bool IsPlanning
     {
@@ -152,7 +160,7 @@ public class ActiveJob : BackupJob
                 NumberFilesRemaining = filesRemaining;
                 SizeFileRemaining = (float)bytesRemaining;
             },
-            OnFileCopied: (file, destinationPath, transferMs) =>
+            OnFileCopied: (file, destinationPath, transferMs, encryptMs) =>
             {
                 AddressesOfFiles?.Add(file.SourceFullPath);
                 DestinationOfFiles?.Add(destinationPath);
@@ -160,6 +168,7 @@ public class ActiveJob : BackupJob
                 LastFileCopied = Path.GetFileName(destinationPath);
                 LastCopiedBytes = (int)file.LengthBytes;
                 LastTransferMs = transferMs;
+                LastEncryptionMs = encryptMs;
 
                 FileCopied?.Invoke(file.SourceFullPath, destinationPath);
             }

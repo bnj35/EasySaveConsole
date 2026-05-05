@@ -1,15 +1,43 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 
 namespace EasySaveConsole
 {
     public static class CryptoSoftRunner
     {
-        // Chemin absolu vers votre exécutable CryptoSoft
-        private const string CryptoSoftPath = @"C:\Users\Omen\Documents\Projet CESI\A3\Projet 5\EasySaveConsole\CryptoSoft\bin\Debug\net10.0\CryptoSoft.exe";
-
-        public static void Encrypt(string source, string destination, string key = "MaCleSecrete123")
+        private static string CryptoSoftPath
         {
+            get
+            {
+                string localPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CryptoSoft.exe");
+                if (File.Exists(localPath))
+                    return localPath;
+                DirectoryInfo? currentDir = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+                while (currentDir != null)
+                {
+                    string binDir = Path.Combine(currentDir.FullName, "CryptoSoft", "bin");
+                    if (Directory.Exists(binDir))
+                    {
+                        string[] files = Directory.GetFiles(binDir, "CryptoSoft.exe", SearchOption.AllDirectories);
+                        if (files.Length > 0) return files[0];
+                    }
+                    currentDir = currentDir.Parent;
+                }
+
+                return localPath; // Retourne le chemin par défaut si introuvable
+            }
+        }
+
+        public static double Encrypt(string source, string destination, string key = "MaCleSecrete123")
+        {
+            if (!File.Exists(CryptoSoftPath))
+            {
+                return -1; 
+            }
+
+            Stopwatch sw = Stopwatch.StartNew();
+
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
                 FileName = CryptoSoftPath,
@@ -19,21 +47,27 @@ namespace EasySaveConsole
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
             };
+            
 
-            using (Process? process = Process.Start(startInfo))
+            try
             {
-                if (process == null)
+                using (Process? process = Process.Start(startInfo))
                 {
-                    throw new InvalidOperationException(LanguageService.T("error.cryptosoft.failed"));
-                }
+                    if (process == null) return -2; 
 
-                process.WaitForExit();
+                    process.WaitForExit(60000); 
+                    sw.Stop();
 
-                if (process.ExitCode != 0)
-                {
-                    string errorMessage = string.Format(LanguageService.T("error.cryptosoft.failed"), process.ExitCode);
-                    throw new Exception(errorMessage);
+                    if (process.ExitCode != 0)
+                    {
+                        return -Math.Abs(process.ExitCode); 
+                    }
                 }
+                return sw.Elapsed.TotalMilliseconds;
+            }
+            catch
+            {
+                return -3; 
             }
         }
     }

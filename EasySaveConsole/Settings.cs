@@ -9,6 +9,7 @@ public sealed class Settings
     public StatusFileSettings StatusFileSettings { get; set; } = new();
     public EasyLogSettings EasyLogSettings { get; set; } = new();
     public ProcessExclusionSettings ProcessExclusionSettings { get; set; } = new();
+    public string EncryptExtensions { get; set; } = ".txt;.pdf";
 
 }
 

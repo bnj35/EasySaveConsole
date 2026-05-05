@@ -13,9 +13,8 @@
         "type": {
           "label": "Backup Type:",
           "full": "Full Backup",
-          "differential": "differential Backup"
+          "differential": "Differential Backup"
         },
-        "encrypt":"Encrypt backup (CryptoSoft)",
         "button": "Create Job"
       },
       "list": {
@@ -47,6 +46,7 @@
     "log.format.label": "Log File Format:",
     "log.dir.label": "Log Directory:",
     "status.path.label": "Status File Path:",
+    "encrypt.extensions.label": "Extensions to encrypt (e.g., .txt;.pdf):",
     "save": "Save",
     "cancel": "Cancel",
     "excludes":{
@@ -115,9 +115,6 @@
     },
     "configuration": {
       "notFound": "Configuration file not found, the default configuration will be used. Error message: {0}"
-    },
-    "cryptosoft": {
-      "failed": "Error during CryptoSoft execution for file. Error code: {0}"
     }
   },
   "run": {

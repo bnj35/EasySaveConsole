@@ -39,7 +39,6 @@ public partial class MainWindow : Window
         string source = SourceDirInput.Text ?? "";
         string target = TargetDirInput.Text ?? "";
         bool isFullBackup = BackupTypeCombo.SelectedIndex != 1;
-        bool encrypt = EncryptCheck?.IsChecked ?? false;
 
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(source) || string.IsNullOrWhiteSpace(target))
         {
@@ -49,7 +48,7 @@ public partial class MainWindow : Window
 
         try
         {
-            _viewModel.CreateJob(name, source, target, isFullBackup, encrypt);
+            _viewModel.CreateJob(name, source, target, isFullBackup, true);
             UpdateStatus(string.Format(LanguageService.T("main.status.job.created"), name));
             RefreshJobList();
 

@@ -2,7 +2,7 @@ namespace EasySaveConsole
 {
     public sealed class CopyPlan
     {
-        public required string SourceRoot { get; init; }//set uniquement à la création de l'objet
+        public required string SourceRoot { get; init; }
         public required string TargetRoot { get; init; }
 
         public List<DirectoryEntry> Directories { get; } = new();
@@ -13,7 +13,7 @@ namespace EasySaveConsole
 
         public int TotalFiles => Files.Count;
 
-        [System.Diagnostics.CodeAnalysis.SetsRequiredMembers] // pour avoir les required -> ne marche pas sans 🤷🏼
+        [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
         public CopyPlan(string sourceRoot, string targetRoot)
         {
             SourceRoot = sourceRoot;

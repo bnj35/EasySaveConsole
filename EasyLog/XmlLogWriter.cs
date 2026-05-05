@@ -35,7 +35,8 @@ public class XmlLogWriter : ILogWriter
                 new XElement("FileSource", file.FileSource),
                 new XElement("FileTarget", file.FileTarget),
                 new XElement("FileSize", file.FileSize),
-                new XElement("FileTransfertTime", file.FileTransfertTime)
+                new XElement("FileTransfertTime", file.FileTransfertTime),
+                new XElement("EncryptionTime", file.EncryptionTime)
             );
         }
         else if (entry is DirectoryLogEntry dir)

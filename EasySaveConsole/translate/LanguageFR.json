@@ -13,9 +13,8 @@
         "type": {
           "label": "Type de sauvegarde :",
           "full": "Sauvegarde complète",
-          "differential": "Sauvegarde differential"
+          "differential": "Sauvegarde différentielle"
         },
-        "encrypt": "Chiffrer la sauvegarde (CryptoSoft)",
         "button": "Créer le travail"
       },
       "list": {
@@ -47,12 +46,13 @@
     "log.format.label": "Format des fichiers de log :",
     "log.dir.label": "Répertoire des logs :",
     "status.path.label": "Chemin du fichier de statut :",
+    "encrypt.extensions.label": "Extensions à chiffrer (ex: .txt;.pdf) :",
     "save": "Enregistrer",
     "cancel": "Annuler",
     "excludes":{
       "processes":{
-        "label":"Process exclus",
-        "exit":"Opération de copie stoppé: un process exclus est en cours"
+        "label":"Processus exclus",
+        "exit":"Opération de copie stoppée : un processus exclus est en cours"
       }
     }
   },
@@ -115,9 +115,6 @@
     },
     "configuration": {
       "notFound": "Le fichier de configuration est introuvable, la configuration par défaut sera utilisée. Message d'erreur: {0}"
-    },
-    "cryptosoft": {
-      "failed": "Erreur lors de l'exécution de CryptoSoft pour le fichier. Code d'erreur : {0}"
     }
   },
   "run": {
