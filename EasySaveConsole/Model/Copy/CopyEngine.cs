@@ -29,7 +29,6 @@ namespace EasySaveConsole
             {
                 throw new ArgumentNullException(nameof(plan), LanguageService.T("error.copyengine.arguments.null"));
             }
-
             Directory.CreateDirectory(plan.TargetRoot);
 
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -39,7 +38,6 @@ namespace EasySaveConsole
                 : CheckProcess(excludedProcesses, linkedCts);
 
             var createdDirectories = new HashSet<string>(GetPathComparer());
-
             try
             {
                 foreach (DirectoryEntry dir in plan.Directories)
@@ -54,6 +52,7 @@ namespace EasySaveConsole
                         _logger.LogDirectoryCreation(jobName, destDir);
                     }
                 }
+
 
                 int remainingBytes = plan.TotalBytes;
                 int remainingFiles = plan.TotalFiles;
@@ -88,6 +87,7 @@ namespace EasySaveConsole
 
                     OnFileCopied?.Invoke(file, destFile, transferMs);
                 }
+
             }
             catch (OperationCanceledException) when (linkedCts.IsCancellationRequested)
             {
