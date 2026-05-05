@@ -23,7 +23,8 @@ public partial class App : Application
             Settings settings = GetConfiguration();
             string logFileFormat = settings.DefaultFileFormat;
             
-            Joblist joblist = new Joblist();
+            string statusPath = $"{settings.StatusFileSettings.FilePath}.{settings.DefaultFileFormat}";
+            Joblist joblist = Joblist.LoadFromStatusFile(statusPath);
             MainViewModel viewModel = new MainViewModel(joblist, settings, logFileFormat);
             
             // Create and show main window
@@ -44,7 +45,7 @@ public partial class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
-    static Settings GetConfiguration()
+    public static Settings GetConfiguration()
     {
         var settings = new Settings();
         try
