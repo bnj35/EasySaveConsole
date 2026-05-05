@@ -5,6 +5,10 @@ namespace EasySaveConsole;
 public class ActiveJob : BackupJob
 {
     private float _totalFileSize;
+    private bool _isPlanning;
+    private string _phaseMessage = string.Empty;
+    private string _planningDetail = string.Empty;
+    private int _planningItemsScanned;
 
     public float TotalFileSize
     {
@@ -69,6 +73,31 @@ public class ActiveJob : BackupJob
         private set => SetProperty(ref _lastTransferMs, value);
     }
 
+// to have a better display of the progression of the job, we need to know if it's in the planning phase or in the copying phase, and to have some details about the planning phase (like how many items have been scanned)
+    public bool IsPlanning
+    {
+        get => _isPlanning;
+        private set => SetProperty(ref _isPlanning, value);
+    }
+
+    public string PhaseMessage
+    {
+        get => _phaseMessage;
+        private set => SetProperty(ref _phaseMessage, value);
+    }
+
+    public string PlanningDetail
+    {
+        get => _planningDetail;
+        private set => SetProperty(ref _planningDetail, value);
+    }
+
+    public int PlanningItemsScanned
+    {
+        get => _planningItemsScanned;
+        private set => SetProperty(ref _planningItemsScanned, value);
+    }
+
     public List<string>? AddressesOfFiles { get; set; }
 
     public List<string>? DestinationOfFiles { get; set; }
@@ -85,13 +114,33 @@ public class ActiveJob : BackupJob
 
         SizeFileRemaining = TotalFileSize;
         Progression = 0.0;
+        IsPlanning = false;
+        PhaseMessage = string.Empty;
+        PlanningDetail = string.Empty;
+        PlanningItemsScanned = 0;
     }
 
     public void RunJob(CopyEngine engine)
     {
         PathGuard.IsLooping(SourceDir, TargetDir);
 
-        CopyPlan plan = CopyPlanner.Build(SourceDir, TargetDir);
+        IsPlanning = true;
+        PhaseMessage = LanguageService.T("run.phase.planning");
+        PlanningDetail = string.Empty;
+        PlanningItemsScanned = 0;
+
+        CopyPlan plan = CopyPlanner.Build(
+            SourceDir,
+            TargetDir,
+            (itemsScanned, currentPath) =>
+            {
+                PlanningItemsScanned = itemsScanned;
+                PlanningDetail = string.Format(LanguageService.T("run.phase.planning.detail"), itemsScanned, currentPath);
+            }
+        );
+
+        IsPlanning = false;
+        PhaseMessage = LanguageService.T("run.phase.copying");
 
         TotalFileSize = plan.TotalBytes;
         NumberFiles = plan.TotalFiles;
@@ -103,6 +152,7 @@ public class ActiveJob : BackupJob
             Name,
             Type,
             Encrypt,
+            cancellationToken: default,
             OnProgressPercent: percent =>
             {
                 Progression = percent;
@@ -124,6 +174,8 @@ public class ActiveJob : BackupJob
                 FileCopied?.Invoke(file.SourceFullPath, destinationPath);
             }
         );
+
+        PhaseMessage = LanguageService.T("run.phase.completed");
         Console.WriteLine();
         float totalCopied = plan.TotalBytes - SizeFileRemaining;
 

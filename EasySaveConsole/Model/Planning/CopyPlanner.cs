@@ -8,7 +8,11 @@ namespace EasySaveConsole
 
     public static class CopyPlanner
     {
-        public static CopyPlan Build(string sourceRoot, string targetRoot)
+        public static CopyPlan Build(
+            string sourceRoot,
+            string targetRoot,
+            Action<int, string>? onItemScanned = null,
+            CancellationToken cancellationToken = default)
         {
             PathGuard.IsLooping(sourceRoot, targetRoot);
 
@@ -65,19 +69,25 @@ namespace EasySaveConsole
 
             foreach (string dir in directoryList)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 string relative = Path.GetRelativePath(sourceFull, dir);
                 planDirectory.Directories.Add(new DirectoryEntry(dir, relative));
+                onItemScanned?.Invoke(planDirectory.Directories.Count + planDirectory.Files.Count, relative);
 
             }
 
             foreach (string file in fileList)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var fileInfo = new FileInfo(file);
 
                 string relative = Path.GetRelativePath(sourceFull, file);
                 planDirectory.Files.Add(new FileEntry(file, relative, fileInfo.Length, fileInfo.LastWriteTimeUtc));
 
                 planDirectory.TotalBytes += (int)fileInfo.Length;
+                onItemScanned?.Invoke(planDirectory.Directories.Count + planDirectory.Files.Count, relative);
             }
 
             planDirectory.Validate();
