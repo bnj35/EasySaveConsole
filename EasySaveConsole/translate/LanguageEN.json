@@ -13,7 +13,7 @@
         "type": {
           "label": "Backup Type:",
           "full": "Full Backup",
-          "incremental": "Incremental"
+          "differential": "differential Backup"
         },
         "encrypt":"Encrypt backup (CryptoSoft)",
         "button": "Create Job"

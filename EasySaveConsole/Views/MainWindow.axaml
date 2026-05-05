@@ -54,7 +54,7 @@
                         <ComboBoxItem
                             Content="{Binding [main.jobs.create.type.full], Source={x:Static local:LanguageService.Instance}}" />
                         <ComboBoxItem
-                            Content="{Binding [main.jobs.create.type.incremental], Source={x:Static local:LanguageService.Instance}}" />
+                            Content="{Binding [main.jobs.create.type.differential], Source={x:Static local:LanguageService.Instance}}" />
                     </ComboBox>
                 </StackPanel>
 

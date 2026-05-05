@@ -13,7 +13,7 @@
         "type": {
           "label": "Type de sauvegarde :",
           "full": "Sauvegarde complète",
-          "incremental": "Incrémentale"
+          "differential": "Sauvegarde differential"
         },
         "encrypt": "Chiffrer la sauvegarde (CryptoSoft)",
         "button": "Créer le travail"
