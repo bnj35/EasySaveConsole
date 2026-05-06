@@ -52,6 +52,7 @@
     "excludes":{
       "processes":{
         "label":"Processus exclus",
+        "placeholder":"ex: notepad, calc",
         "exit":"Opération de copie stoppée : un processus exclus est en cours"
       }
     }

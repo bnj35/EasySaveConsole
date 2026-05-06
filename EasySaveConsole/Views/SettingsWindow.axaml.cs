@@ -25,8 +25,6 @@ public partial class SettingsWindow : Window
 
         LanguageCombo.SelectedIndex = CurrentLanguage == "fr" ? 1 : 0;
         LogFormatCombo.SelectedIndex = _settings.DefaultFileFormat == "xml" ? 1 : 0;
-        LogDirInput.Text = _settings.EasyLogSettings.DirectoryPath;
-        StatusPathInput.Text = _settings.StatusFileSettings.FilePath;
         ExcludeProcessesInput.Text = _settings.ProcessExclusionSettings.ExcludedProcesses;
         EncryptExtensionsInput.Text = _settings.EncryptExtensions;
 
@@ -44,8 +42,6 @@ public partial class SettingsWindow : Window
         }
 
         _settings.DefaultFileFormat = LogFormatCombo.SelectedIndex == 1 ? "xml" : "json";
-        _settings.EasyLogSettings.DirectoryPath = LogDirInput.Text ?? _settings.EasyLogSettings.DirectoryPath;
-        _settings.StatusFileSettings.FilePath = StatusPathInput.Text ?? _settings.StatusFileSettings.FilePath;
         _settings.ProcessExclusionSettings.ExcludedProcesses = ExcludeProcessesInput.Text ?? "";
         _settings.EncryptExtensions = EncryptExtensionsInput.Text ?? "";
 
@@ -56,20 +52,15 @@ public partial class SettingsWindow : Window
 
     private void PersistSettings()
     {
-        try
+        var data = new
         {
-            var data = new
-            {
-                defaultFileFormat = _settings.DefaultFileFormat,
-                dateFormat = _settings.DateFormat,
-                statusFileSettings = new { filePath = _settings.StatusFileSettings.FilePath },
-                easyLogSettings = new { directoryPath = _settings.EasyLogSettings.DirectoryPath },
-                processExclusionSettings = new { excludedProcesses = _settings.ProcessExclusionSettings.ExcludedProcesses },
-                encryptExtensions = _settings.EncryptExtensions
-
-            };
-            File.WriteAllText("./appsettings.json", JsonSerializer.Serialize(data, _jsonOptions));
-        }
-        catch { }
+            defaultFileFormat = _settings.DefaultFileFormat,
+            dateFormat = _settings.DateFormat,
+            statusFileSettings = new { filePath = _settings.StatusFileSettings.FilePath },
+            easyLogSettings = new { directoryPath = _settings.EasyLogSettings.DirectoryPath },                
+            processExclusionSettings = new { excludedProcesses = _settings.ProcessExclusionSettings.ExcludedProcesses },
+            encryptExtensions = _settings.EncryptExtensions
+        };
+        File.WriteAllText("./appsettings.json", JsonSerializer.Serialize(data, _jsonOptions));
     }
 }

@@ -68,7 +68,7 @@ public class Joblist
                 if (!string.IsNullOrWhiteSpace(entry.DateCreated) && DateTime.TryParse(entry.DateCreated, out var parsed))
                     dateCreated = parsed;
 
-                var job = new BackupJob(entry.Name, entry.SourceDir ?? "", entry.TargetDir ?? "", true, false, dateCreated);
+                var job = new BackupJob(entry.Name, entry.SourceDir ?? "", entry.TargetDir ?? "", true, dateCreated);
                 list.AddJob(job);
             }
         }

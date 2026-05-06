@@ -18,6 +18,19 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\CryptoSoft\CryptoSoft.csproj">
+			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+		</ProjectReference>
+	</ItemGroup>
+
+	<Target Name="CopyCryptoSoftOutput" AfterTargets="Build">
+		<ItemGroup>
+			<CryptoSoftFiles Include="..\CryptoSoft\bin\$(Configuration)\$(TargetFramework)\*.*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(CryptoSoftFiles)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+	</Target>
+
+	<ItemGroup>
 		<PackageReference Include="Avalonia" Version="12.0.0" />
 		<PackageReference Include="Avalonia.Desktop" Version="12.0.0" />
 		<PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.0" />
