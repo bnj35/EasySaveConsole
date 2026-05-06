@@ -22,7 +22,7 @@ namespace EasySaveConsole
             CancellationToken cancellationToken = default,
             Action<double>? OnProgressPercent = null,
             Action<int, int>? OnRemainingChanged = null,
-            Action<FileEntry, string, double>? OnFileCopied = null
+            Action<FileEntry, string, double, double>? OnFileCopied = null
         )
         {
             if (plan == null || jobName == null)
@@ -36,6 +36,8 @@ namespace EasySaveConsole
             Task? processMonitorTask = excludedProcesses.Length == 0
                 ? null
                 : CheckProcess(excludedProcesses, linkedCts);
+
+            string[] encryptExtensions = GetEncryptExtensions();
 
             var createdDirectories = new HashSet<string>(GetPathComparer());
             try
@@ -70,7 +72,8 @@ namespace EasySaveConsole
                         _logger.LogDirectoryCreation(jobName, destDir);
                     }
 
-                    double transferMs = CopyFileWithTiming(file.SourceFullPath, destFile, type, encrypt);
+                    bool shouldEncrypt = encrypt && IsExtensionToEncrypt(file.SourceFullPath, encryptExtensions);
+                    var (transferMs, encryptMs) = CopyFileWithTiming(file.SourceFullPath, destFile, type, shouldEncrypt);
 
                     remainingBytes -= (int)file.LengthBytes;
                     remainingFiles--;
@@ -83,9 +86,9 @@ namespace EasySaveConsole
                         OnProgressPercent?.Invoke(done * 100.0);
                     }
 
-                    _logger.LogFileCopy(jobName, file.SourceFullPath, destFile, file.LengthBytes, transferMs);
+                    _logger.LogFileCopy(jobName, file.SourceFullPath, destFile, file.LengthBytes, transferMs, encryptMs);
 
-                    OnFileCopied?.Invoke(file, destFile, transferMs);
+                    OnFileCopied?.Invoke(file, destFile, transferMs, encryptMs);
                 }
 
             }
@@ -110,14 +113,16 @@ namespace EasySaveConsole
             }
         }
 
-        private static double CopyFileWithTiming(string sourceFile, string destFile, bool type, bool encrypt)
+        private static (double transferMs, double encryptMs) CopyFileWithTiming(string sourceFile, string destFile, bool type, bool encrypt)
         {
             var time = Stopwatch.StartNew();
             double elapsedTime = 0.0;
+            double encryptTime = 0.0;
 
             if (encrypt)
             {
-                CryptoSoftRunner.Encrypt(sourceFile, destFile);
+                encryptTime = CryptoSoftRunner.Encrypt(sourceFile, destFile);
+                time.Stop();
             }
             else
             {
@@ -159,13 +164,35 @@ namespace EasySaveConsole
 
             elapsedTime = time.Elapsed.TotalMilliseconds;
 
-            return elapsedTime;
+            return (elapsedTime, encryptTime);
         }
 
         public static IEqualityComparer<string> GetPathComparer()
         {
             var comparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
             return comparer;
+        }
+
+        private string[] GetEncryptExtensions()
+        {
+            string? exts = _settings.EncryptExtensions;
+            if (!string.IsNullOrWhiteSpace(exts))
+            {
+                return exts.Split(new[] { ';', ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                           .Select(e => e.Trim().ToLowerInvariant())
+                           .ToArray();
+            }
+            return Array.Empty<string>();
+        }
+
+        private static bool IsExtensionToEncrypt(string filePath, string[] encryptExtensions)
+        {
+            if (encryptExtensions.Length == 0) return false;
+            
+            string extension = Path.GetExtension(filePath).ToLowerInvariant();
+            
+            // Tolère si l'utilisateur a écrit "txt" sans le point "."
+            return encryptExtensions.Any(ext => extension == ext || extension == "." + ext);
         }
 
 
@@ -232,4 +259,3 @@ namespace EasySaveConsole
         }
     }
 }
-

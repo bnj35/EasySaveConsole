@@ -3,7 +3,7 @@
     xmlns:local="using:EasySaveConsole"
     x:Class="EasySaveConsole.SettingsWindow"
     Title="{Binding [settings.title], Source={x:Static local:LanguageService.Instance}}"
-    Width="420" Height="550"
+    Width="420" SizeToContent="Height"
     WindowStartupLocation="CenterOwner"
     CanResize="False">
     <DockPanel Margin="20">
@@ -62,6 +62,13 @@
                     Text="{Binding [settings.exclude.processes.label], Source={x:Static local:LanguageService.Instance}}"
                     FontWeight="SemiBold" />
                 <TextBox x:Name="ExcludeProcessesInput" AcceptsReturn="True" Height="100" />
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+                <TextBlock
+                    Text="{Binding [settings.encrypt.extensions.label], Source={x:Static local:LanguageService.Instance}}"
+                    FontWeight="SemiBold" />
+                <TextBox x:Name="EncryptExtensionsInput" PlaceholderText=".txt;.pdf" />
             </StackPanel>
 
         </StackPanel>

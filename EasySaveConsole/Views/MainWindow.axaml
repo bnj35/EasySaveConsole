@@ -57,10 +57,6 @@
                             Content="{Binding [main.jobs.create.type.differential], Source={x:Static local:LanguageService.Instance}}" />
                     </ComboBox>
                 </StackPanel>
-
-                <CheckBox x:Name="EncryptCheck"
-                    Content="{Binding [main.jobs.create.encrypt], Source={x:Static local:LanguageService.Instance}}" />
-
                 <Button x:Name="CreateJobButton"
                     Content="{Binding [main.jobs.create.button], Source={x:Static local:LanguageService.Instance}}"
                     Padding="8,4" />

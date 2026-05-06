@@ -28,6 +28,7 @@ public partial class SettingsWindow : Window
         LogDirInput.Text = _settings.EasyLogSettings.DirectoryPath;
         StatusPathInput.Text = _settings.StatusFileSettings.FilePath;
         ExcludeProcessesInput.Text = _settings.ProcessExclusionSettings.ExcludedProcesses;
+        EncryptExtensionsInput.Text = _settings.EncryptExtensions;
 
         SaveButton.Click += SaveButton_Click;
         CancelButton.Click += (_, _) => Close(false);
@@ -46,6 +47,7 @@ public partial class SettingsWindow : Window
         _settings.EasyLogSettings.DirectoryPath = LogDirInput.Text ?? _settings.EasyLogSettings.DirectoryPath;
         _settings.StatusFileSettings.FilePath = StatusPathInput.Text ?? _settings.StatusFileSettings.FilePath;
         _settings.ProcessExclusionSettings.ExcludedProcesses = ExcludeProcessesInput.Text ?? "";
+        _settings.EncryptExtensions = EncryptExtensionsInput.Text ?? "";
 
 
         PersistSettings();
@@ -62,7 +64,8 @@ public partial class SettingsWindow : Window
                 dateFormat = _settings.DateFormat,
                 statusFileSettings = new { filePath = _settings.StatusFileSettings.FilePath },
                 easyLogSettings = new { directoryPath = _settings.EasyLogSettings.DirectoryPath },
-                processExclusionSettings = new { excludedProcesses = _settings.ProcessExclusionSettings.ExcludedProcesses }
+                processExclusionSettings = new { excludedProcesses = _settings.ProcessExclusionSettings.ExcludedProcesses },
+                encryptExtensions = _settings.EncryptExtensions
 
             };
             File.WriteAllText("./appsettings.json", JsonSerializer.Serialize(data, _jsonOptions));
