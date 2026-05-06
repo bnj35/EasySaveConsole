@@ -48,7 +48,7 @@ public partial class MainWindow : Window
 
         try
         {
-            _viewModel.CreateJob(name, source, target, isFullBackup, true);
+            _viewModel.CreateJob(name, source, target, isFullBackup);
             UpdateStatus(string.Format(LanguageService.T("main.status.job.created"), name));
             RefreshJobList();
 

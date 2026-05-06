@@ -19,7 +19,7 @@ class Program
             string statusPath = $"{settings.StatusFileSettings.FilePath}.{format}";
 
             Joblist joblist = Joblist.LoadFromStatusFile(statusPath);
-            MainViewModel viewModel = new MainViewModel(joblist, settings, format);
+            MainViewModel viewModel = new MainViewModel(joblist, settings);
 
             var indices = ParseIndices(args[0]);
 

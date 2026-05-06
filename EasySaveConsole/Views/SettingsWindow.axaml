@@ -44,24 +44,10 @@
 
             <StackPanel Spacing="4">
                 <TextBlock
-                    Text="{Binding [settings.log.dir.label], Source={x:Static local:LanguageService.Instance}}"
+                    Text="{Binding [settings.excludes.processes.label], Source={x:Static local:LanguageService.Instance}}"
                     FontWeight="SemiBold" />
-                <TextBox x:Name="LogDirInput" />
-            </StackPanel>
-
-            <StackPanel Spacing="4">
-                <TextBlock
-                    Text="{Binding [settings.status.path.label], Source={x:Static local:LanguageService.Instance}}"
-                    FontWeight="SemiBold" />
-                <TextBox x:Name="StatusPathInput" />
-            </StackPanel>
-
-
-            <StackPanel Spacing="4">
-                <TextBlock
-                    Text="{Binding [settings.exclude.processes.label], Source={x:Static local:LanguageService.Instance}}"
-                    FontWeight="SemiBold" />
-                <TextBox x:Name="ExcludeProcessesInput" AcceptsReturn="True" Height="100" />
+                <TextBox x:Name="ExcludeProcessesInput" AcceptsReturn="True" Height="100"
+                    PlaceholderText="{Binding [settings.excludes.processes.placeholder], Source={x:Static local:LanguageService.Instance}}" />
             </StackPanel>
 
             <StackPanel Spacing="4">
