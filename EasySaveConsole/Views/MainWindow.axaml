@@ -50,7 +50,7 @@
                 <StackPanel Spacing="4">
                     <TextBlock
                         Text="{Binding [main.jobs.create.type.label], Source={x:Static local:LanguageService.Instance}}" />
-                    <ComboBox x:Name="BackupTypeCombo">
+                    <ComboBox x:Name="BackupTypeCombo" SelectedIndex="0">
                         <ComboBoxItem
                             Content="{Binding [main.jobs.create.type.full], Source={x:Static local:LanguageService.Instance}}" />
                         <ComboBoxItem

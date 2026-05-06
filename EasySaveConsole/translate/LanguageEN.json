@@ -52,6 +52,7 @@
     "excludes":{
       "processes":{
         "label":"Excluded Processes",
+        "placeholder":"ex: notepad, calc",
         "exit":"Copy operation stopped: excluded process is running."
       }
     }

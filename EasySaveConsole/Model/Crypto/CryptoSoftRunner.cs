@@ -6,68 +6,63 @@ namespace EasySaveConsole
 {
     public static class CryptoSoftRunner
     {
-        private static string CryptoSoftPath
+        private static string ResolveCryptoSoftPath()
         {
-            get
+            string localPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CryptoSoft.exe");
+            if (File.Exists(localPath))
+                return localPath;
+            DirectoryInfo? currentDir = new(AppDomain.CurrentDomain.BaseDirectory);
+            while (currentDir != null)
             {
-                string localPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CryptoSoft.exe");
-                if (File.Exists(localPath))
-                    return localPath;
-                DirectoryInfo? currentDir = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
-                while (currentDir != null)
+                string binDir = Path.Combine(currentDir.FullName, "CryptoSoft", "bin");
+                if (Directory.Exists(binDir))
                 {
-                    string binDir = Path.Combine(currentDir.FullName, "CryptoSoft", "bin");
-                    if (Directory.Exists(binDir))
-                    {
-                        string[] files = Directory.GetFiles(binDir, "CryptoSoft.exe", SearchOption.AllDirectories);
-                        if (files.Length > 0) return files[0];
-                    }
-                    currentDir = currentDir.Parent;
+                    string[] files = Directory.GetFiles(binDir, "CryptoSoft.exe", SearchOption.AllDirectories);
+                    if (files.Length > 0) return files[0];
                 }
-
-                return localPath; // Retourne le chemin par défaut si introuvable
+                currentDir = currentDir.Parent;
             }
+            return localPath;
         }
 
         public static double Encrypt(string source, string destination, string key = "MaCleSecrete123")
         {
-            if (!File.Exists(CryptoSoftPath))
-            {
-                return -1; 
-            }
+            string exePath = ResolveCryptoSoftPath();
+
+            if (!File.Exists(exePath))
+                return -1;
 
             Stopwatch sw = Stopwatch.StartNew();
 
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
-                FileName = CryptoSoftPath,
+                FileName = exePath,
                 Arguments = $"\"{source}\" \"{destination}\" \"{key}\"",
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
             };
-            
 
             try
             {
-                using (Process? process = Process.Start(startInfo))
-                {
-                    if (process == null) return -2; 
+                using Process? process = Process.Start(startInfo);
+                if (process == null)
+                    return -2;
 
-                    process.WaitForExit(60000); 
-                    sw.Stop();
+                process.StandardError.ReadToEnd();
+                process.StandardOutput.ReadToEnd();
+                process.WaitForExit(60000);
+                sw.Stop();
 
-                    if (process.ExitCode != 0)
-                    {
-                        return -Math.Abs(process.ExitCode); 
-                    }
-                }
+                if (process.ExitCode != 0)
+                    return -Math.Abs(process.ExitCode);
+
                 return sw.Elapsed.TotalMilliseconds;
             }
             catch
             {
-                return -3; 
+                return -3;
             }
         }
     }

@@ -18,11 +18,10 @@ namespace EasySaveConsole
             CopyPlan plan,
             string jobName,
             bool type,
-            bool encrypt,
-            CancellationToken cancellationToken = default,
             Action<double>? OnProgressPercent = null,
             Action<int, int>? OnRemainingChanged = null,
-            Action<FileEntry, string, double, double>? OnFileCopied = null
+            Action<FileEntry, string, double, double>? OnFileCopied = null,
+            CancellationToken cancellationToken = default
         )
         {
             if (plan == null || jobName == null)
@@ -72,7 +71,7 @@ namespace EasySaveConsole
                         _logger.LogDirectoryCreation(jobName, destDir);
                     }
 
-                    bool shouldEncrypt = encrypt && IsExtensionToEncrypt(file.SourceFullPath, encryptExtensions);
+                    bool shouldEncrypt = IsExtensionToEncrypt(file.SourceFullPath, encryptExtensions);
                     var (transferMs, encryptMs) = CopyFileWithTiming(file.SourceFullPath, destFile, type, shouldEncrypt);
 
                     remainingBytes -= (int)file.LengthBytes;

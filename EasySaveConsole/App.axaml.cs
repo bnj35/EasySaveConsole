@@ -21,11 +21,9 @@ public partial class App : Application
             LanguageService.Instance.Load("en");
             
             Settings settings = GetConfiguration();
-            string logFileFormat = settings.DefaultFileFormat;
-            
             string statusPath = $"{settings.StatusFileSettings.FilePath}.{settings.DefaultFileFormat}";
             Joblist joblist = Joblist.LoadFromStatusFile(statusPath);
-            MainViewModel viewModel = new MainViewModel(joblist, settings, logFileFormat);
+            MainViewModel viewModel = new MainViewModel(joblist, settings);
             
             // Create and show main window
             var mainWindow = new MainWindow
