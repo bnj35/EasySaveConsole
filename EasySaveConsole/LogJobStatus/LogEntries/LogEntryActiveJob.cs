@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
+namespace EasySaveConsole;
+
 public sealed class LogEntryActiveJob : LogEntryBackupJob
 {
     public int TotalFiles { get; set; }

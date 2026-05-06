@@ -35,7 +35,7 @@
         /// <summary>
         /// Logs the copy of a file
         /// </summary>
-        public void LogFileCopy(string backupName, string sourcePath, string destinationPath, long fileSize, double transferTime)
+        public void LogFileCopy(string backupName, string sourcePath, string destinationPath, long fileSize, double transferTime, double encryptionTime = 0)
         {
             FileLogEntry entry = new FileLogEntry(
                 Configuration.FILE_COPY,
@@ -44,7 +44,8 @@
                 sourcePath,
                 destinationPath,
                 fileSize,
-                transferTime
+                transferTime,
+                encryptionTime
             );
             writer.Write(entry);
         }

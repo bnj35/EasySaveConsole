@@ -1,8 +1,13 @@
 using EasyLog;
 
+namespace EasySaveConsole;
+
 public class ActiveJob : BackupJob
 {
     private float _totalFileSize;
+    private bool _isPlanning;
+    private string _phaseMessage = string.Empty;
+    private int _planningItemsScanned;
 
     public float TotalFileSize
     {
@@ -67,6 +72,33 @@ public class ActiveJob : BackupJob
         private set => SetProperty(ref _lastTransferMs, value);
     }
 
+    private double _lastEncryptionMs;
+
+    public double LastEncryptionMs
+    {
+        get => _lastEncryptionMs;
+        private set => SetProperty(ref _lastEncryptionMs, value);
+    }
+
+// to have a better display of the progression of the job, we need to know if it's in the planning phase or in the copying phase, and to have some details about the planning phase (like how many items have been scanned)
+    public bool IsPlanning
+    {
+        get => _isPlanning;
+        private set => SetProperty(ref _isPlanning, value);
+    }
+
+    public string PhaseMessage
+    {
+        get => _phaseMessage;
+        private set => SetProperty(ref _phaseMessage, value);
+    }
+
+    public int PlanningItemsScanned
+    {
+        get => _planningItemsScanned;
+        private set => SetProperty(ref _planningItemsScanned, value);
+    }
+
     public List<string>? AddressesOfFiles { get; set; }
 
     public List<string>? DestinationOfFiles { get; set; }
@@ -74,7 +106,7 @@ public class ActiveJob : BackupJob
     public event Action<string, string>? FileCopied;
 
 
-    public ActiveJob(string name, string source_dir, string target_dir, bool type, DateTime date) : base(name, source_dir, target_dir, type, date)
+    public ActiveJob(string name, string source_dir, string target_dir, bool type, bool encrypt, DateTime date) : base(name, source_dir, target_dir, type, encrypt, date)
     {
         TotalFileSize = 0;
         NumberFiles = 0;
@@ -83,39 +115,53 @@ public class ActiveJob : BackupJob
 
         SizeFileRemaining = TotalFileSize;
         Progression = 0.0;
+        IsPlanning = false;
+        PhaseMessage = string.Empty;
+        PlanningItemsScanned = 0;
     }
 
     public void RunJob(CopyEngine engine)
     {
-        Console.WriteLine(string.Format(LanguageService.T("run.running.named"), Name));
-
         PathGuard.IsLooping(SourceDir, TargetDir);
+        IsPlanning = true;
+        PhaseMessage = LanguageService.T("run.phase.planning");
+        PlanningItemsScanned = 0;
 
-        CopyPlan plan = CopyPlanner.Build(SourceDir, TargetDir);
+        CopyPlan plan = CopyPlanner.Build(
+            SourceDir,
+            TargetDir,
+            (itemsScanned, currentPath) =>
+            {
+                PlanningItemsScanned = itemsScanned;
+            }
+        );
+        // pas de blocage
+
+        IsPlanning = false;
+        PhaseMessage = LanguageService.T("run.phase.copying");
 
         TotalFileSize = plan.TotalBytes;
         NumberFiles = plan.TotalFiles;
         NumberFilesRemaining = NumberFiles;
         SizeFileRemaining = TotalFileSize;
 
-        Console.WriteLine(string.Format(LanguageService.T("active.total.size"), TotalFileSize));
-        Console.WriteLine(string.Format(LanguageService.T("active.total.files"), NumberFiles));
-        Console.WriteLine();
-
         engine.Execute(
             plan,
             Name,
             Type,
+            Encrypt,
+            cancellationToken: default,
             OnProgressPercent: percent =>
             {
                 Progression = percent;
+                Console.WriteLine($"{percent}");// temp a enlever
             },
             OnRemainingChanged: (filesRemaining, bytesRemaining) =>
             {
                 NumberFilesRemaining = filesRemaining;
                 SizeFileRemaining = (float)bytesRemaining;
             },
-            OnFileCopied: (file, destinationPath, transferMs) =>
+            OnFileCopied: (file, destinationPath, transferMs, encryptMs) =>
             {
                 AddressesOfFiles?.Add(file.SourceFullPath);
                 DestinationOfFiles?.Add(destinationPath);
@@ -123,13 +169,15 @@ public class ActiveJob : BackupJob
                 LastFileCopied = Path.GetFileName(destinationPath);
                 LastCopiedBytes = (int)file.LengthBytes;
                 LastTransferMs = transferMs;
+                LastEncryptionMs = encryptMs;
 
                 FileCopied?.Invoke(file.SourceFullPath, destinationPath);
             }
         );
+
+        PhaseMessage = LanguageService.T("run.phase.completed");
         Console.WriteLine();
         float totalCopied = plan.TotalBytes - SizeFileRemaining;
-        Console.WriteLine(string.Format(LanguageService.T("active.total.copied"), totalCopied));
 
     }
 

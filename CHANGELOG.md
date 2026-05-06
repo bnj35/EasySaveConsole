@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.0.0] - 2026-05-06
+### Changed
+- Rewrite of the View, replaced console interface with a graphical user interface
+
+### Added
+- File encryption support
+- Business software blocking
+- Settings window
+
 ## [1.1.0] - 2026-05-04
 ### Added
 - XML format for daily log files

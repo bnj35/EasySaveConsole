@@ -1,4 +1,5 @@
-﻿public enum JobState
+﻿namespace EasySaveConsole;
+public enum JobState
 {
     Inactive,
     Active
@@ -22,7 +23,10 @@ public class StatusLogger
                 _writer = new JsonStatusWriter(completeFilePath);
                 break;
         }
-        _writer.ResetStatusFile();
+        if (!File.Exists(completeFilePath))
+        {
+            _writer.ResetStatusFile();
+        }
     }
     public void UpdateInactiveJob(BackupJob job)
     {

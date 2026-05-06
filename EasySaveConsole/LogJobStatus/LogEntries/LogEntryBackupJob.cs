@@ -1,4 +1,6 @@
-﻿public class LogEntryBackupJob
+﻿namespace EasySaveConsole;
+
+public class LogEntryBackupJob
 {
     public string Name { get; set; } = "";
     public JobState State { get; set; }

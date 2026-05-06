@@ -11,7 +11,8 @@ public record FileLogEntry(
     [property: JsonPropertyOrder(3)] string FileSource,
     [property: JsonPropertyOrder(4)] string FileTarget,
     [property: JsonPropertyOrder(5)] long FileSize,
-    [property: JsonPropertyOrder(6)] double FileTransfertTime
+    [property: JsonPropertyOrder(6)] double FileTransfertTime,
+    [property: JsonPropertyOrder(7)] double EncryptionTime
 ) : LogEntry(Action, Name, Time);
 
 public record DirectoryLogEntry(

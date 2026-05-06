@@ -1,10 +1,17 @@
 ﻿using System.Text.Json;
+using System.ComponentModel;
 
-public static class LanguageService
+namespace EasySaveConsole;
+public class LanguageService : INotifyPropertyChanged
 {
     private static Dictionary<string,string> _translation = new () ;
 
-    public static void Load(string lang = "en")
+    // Singleton pour le binding
+    public static LanguageService Instance { get; } = new LanguageService();
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public void Load(string lang = "en")
     {
         string path = Path.Combine("translate",$"Language{lang.ToUpper()}.json");
 
@@ -18,10 +25,10 @@ public static class LanguageService
         _translation = new Dictionary<string, string>();
 
         FlattenJson(root, string.Empty, _translation);
-
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
     }
 
-    private static void FlattenJson(JsonElement element, string prefix, Dictionary<string, string> dict)
+    private void FlattenJson(JsonElement element, string prefix, Dictionary<string, string> dict)
     {
         switch (element.ValueKind)
         {
@@ -42,6 +49,7 @@ public static class LanguageService
                 break;
         }
     }
+    public string this[string key] => T(key);
 
     public static string T(string key)
     {
