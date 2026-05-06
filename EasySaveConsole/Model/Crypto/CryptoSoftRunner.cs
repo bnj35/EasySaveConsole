@@ -28,13 +28,9 @@ namespace EasySaveConsole
         public static double Encrypt(string source, string destination, string key = "MaCleSecrete123")
         {
             string exePath = ResolveCryptoSoftPath();
-            File.AppendAllText("crypto_debug.log", $"[{DateTime.Now:HH:mm:ss}] exe={exePath} exists={File.Exists(exePath)}\n  src={source}\n  dst={destination}\n");
 
             if (!File.Exists(exePath))
-            {
-                File.AppendAllText("crypto_debug.log", "  => ABORT: exe not found\n");
                 return -1;
-            }
 
             Stopwatch sw = Stopwatch.StartNew();
 
@@ -52,26 +48,20 @@ namespace EasySaveConsole
             {
                 using Process? process = Process.Start(startInfo);
                 if (process == null)
-                {
-                    File.AppendAllText("crypto_debug.log", "  => ABORT: Process.Start returned null\n");
                     return -2;
-                }
 
-                string stderr = process.StandardError.ReadToEnd();
-                string stdout = process.StandardOutput.ReadToEnd();
+                process.StandardError.ReadToEnd();
+                process.StandardOutput.ReadToEnd();
                 process.WaitForExit(60000);
                 sw.Stop();
-
-                File.AppendAllText("crypto_debug.log", $"  => exitCode={process.ExitCode} stdout={stdout} stderr={stderr}\n");
 
                 if (process.ExitCode != 0)
                     return -Math.Abs(process.ExitCode);
 
                 return sw.Elapsed.TotalMilliseconds;
             }
-            catch (Exception ex)
+            catch
             {
-                File.AppendAllText("crypto_debug.log", $"  => EXCEPTION: {ex.Message}\n");
                 return -3;
             }
         }
