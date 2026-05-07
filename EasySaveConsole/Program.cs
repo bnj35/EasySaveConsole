@@ -8,7 +8,6 @@ namespace EasySaveConsole;
 
 class Program
 {
-    // [STAThread] c'était par apport au COM mais vu qu'on veut du parallelisme il vaut mieux l'enlever ( je suis pas 100% sûr de ce que ça fait)
     static void Main(string[] args)
     {
         if (args.Length > 0)
