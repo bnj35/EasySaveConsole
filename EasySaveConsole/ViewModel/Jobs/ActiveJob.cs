@@ -152,7 +152,6 @@ public class ActiveJob : BackupJob
             OnProgressPercent: percent =>
             {
                 Progression = percent;
-                Console.WriteLine($"{percent}");// temp a enlever
             },
             OnRemainingChanged: (filesRemaining, bytesRemaining) =>
             {

@@ -82,11 +82,15 @@ public partial class MainWindow : Window
             ? string.Format(LanguageService.T("main.status.running.one"), selectedJobs[0].Name)
             : string.Format(LanguageService.T("main.status.running.multiple"), selectedJobs.Count));
 
-        Task.Run(() =>
-        {
-            bool allJobsSucceeded = true;
+    Task.Run(async () =>
+    {
+        var tasks = new List<Task>();
+        bool allJobsSucceeded = true;
 
-            foreach (var job in selectedJobs)
+        //une task par job
+        foreach (var job in selectedJobs)
+        {
+            var task = Task.Run(() =>
             {
                 ActiveJob? activeJob = null;
 
@@ -118,7 +122,13 @@ public partial class MainWindow : Window
                         UpdateStatus(string.Format(LanguageService.T("main.status.error.run"), job.Name, ex.Message));
                     });
                 }
-            }
+            });
+
+            tasks.Add(task);
+        }
+
+        // attend que tout les jobs termine
+        await Task.WhenAll(tasks);
 
             if (allJobsSucceeded)
             {
