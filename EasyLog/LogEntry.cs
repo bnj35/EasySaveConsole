@@ -1,6 +1,5 @@
 ﻿using System.Text.Json.Serialization;
-
-public abstract record LogEntry(
+public record LogEntry(
     [property: JsonPropertyOrder(0)] string Action,
     [property: JsonPropertyOrder(1)] string Name,
     [property: JsonPropertyOrder(2)] string Time
