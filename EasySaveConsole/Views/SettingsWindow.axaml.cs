@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using EasyLog;
 using System.Text.Json;
 
 namespace EasySaveConsole;
@@ -23,6 +24,19 @@ public partial class SettingsWindow : Window
         _settings = settings;
         CurrentLanguage = currentLanguage;
 
+        switch (_settings.EasyLogSettings.LogStorage)
+        {
+            case LogStorage.Local:
+                LogStorageCombo.SelectedIndex = 0;
+                break;
+            case LogStorage.Remote:
+                LogStorageCombo.SelectedIndex = 1;
+                break;
+            case LogStorage.Both:
+                LogStorageCombo.SelectedIndex = 2;
+                break;
+        };
+
         LanguageCombo.SelectedIndex = CurrentLanguage == "fr" ? 1 : 0;
         LogFormatCombo.SelectedIndex = _settings.DefaultFileFormat == "xml" ? 1 : 0;
         ExcludeProcessesInput.Text = _settings.ProcessExclusionSettings.ExcludedProcesses;
@@ -41,6 +55,19 @@ public partial class SettingsWindow : Window
             CurrentLanguage = newLang;
         }
 
+        switch (LogStorageCombo.SelectedIndex)
+        {
+            case 0:
+                _settings.EasyLogSettings.LogStorage = LogStorage.Local;
+                break;
+            case 1:
+                _settings.EasyLogSettings.LogStorage = LogStorage.Remote;
+                break;
+            case 2:
+                _settings.EasyLogSettings.LogStorage = LogStorage.Both;
+                break;
+        };
+
         _settings.DefaultFileFormat = LogFormatCombo.SelectedIndex == 1 ? "xml" : "json";
         _settings.ProcessExclusionSettings.ExcludedProcesses = ExcludeProcessesInput.Text ?? "";
         _settings.EncryptExtensions = EncryptExtensionsInput.Text ?? "";
@@ -57,7 +84,7 @@ public partial class SettingsWindow : Window
             defaultFileFormat = _settings.DefaultFileFormat,
             dateFormat = _settings.DateFormat,
             statusFileSettings = new { filePath = _settings.StatusFileSettings.FilePath },
-            easyLogSettings = new { directoryPath = _settings.EasyLogSettings.DirectoryPath },                
+            easyLogSettings = new { directoryPath = _settings.EasyLogSettings.DirectoryPath, logStorage = _settings.EasyLogSettings.LogStorage },
             processExclusionSettings = new { excludedProcesses = _settings.ProcessExclusionSettings.ExcludedProcesses },
             encryptExtensions = _settings.EncryptExtensions
         };

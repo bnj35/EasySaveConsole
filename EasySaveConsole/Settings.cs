@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using EasyLog;
 
 public sealed class Settings
 {
@@ -20,7 +21,8 @@ public sealed class StatusFileSettings
 
 public sealed class EasyLogSettings
 {
-    public string DirectoryPath { get; set; } = "./log";
+    public string DirectoryPath { get; set; } = "./logs";
+    public LogStorage LogStorage { get; set; } = LogStorage.Both;
 }
 public sealed class ProcessExclusionSettings
 {

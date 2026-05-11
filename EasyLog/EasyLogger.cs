@@ -1,8 +1,16 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Xml.Linq;
 
 namespace EasyLog
 {
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum LogActions
+    {
+        FileCopy,
+        DirectoryCreation
+    }
+
     public class EasyLogger
     {
         private readonly string _logDirectory;
@@ -12,7 +20,7 @@ namespace EasyLog
             _logDirectory = logDirectory;
         }
 
-        public void Save(LogEntry? entry, string format)
+        public void Log(LogEntry? entry, string format)
         {
             if (entry != null)
             {
