@@ -12,7 +12,7 @@ namespace EasySaveConsole
 
         public int TotalBytes { get; set; }
 
-        public int TotalFiles => Files.Count;
+        public int TotalFiles => Files.Count + Directories.Count;
 
         [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
         public CopyPlan(string sourceRoot, string targetRoot)

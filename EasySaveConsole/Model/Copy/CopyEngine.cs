@@ -13,7 +13,7 @@ namespace EasySaveConsole
             _logger = EasyLogger.GetInstance(settings.EasyLogSettings.DirectoryPath, settings.DateFormat, settings.DefaultFileFormat);
             _settings = settings;
         }
-        
+
         public void Execute(
             CopyPlan plan,
             string jobName,
@@ -59,6 +59,10 @@ namespace EasySaveConsole
                             Directory.CreateDirectory(destDir);
                             _logger.LogDirectoryCreation(jobName, destDir);
                         }
+
+                        remainingFiles--;
+                        OnRemainingChanged?.Invoke(remainingFiles, remainingBytes);
+
                     }
                     else if (ent is FileEntry file)
                     {

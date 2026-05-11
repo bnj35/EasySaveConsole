@@ -133,8 +133,9 @@ public class ActiveJob : BackupJob
             (itemsScanned, currentPath) =>
             {
                 PlanningItemsScanned = itemsScanned;
+                PhaseMessage = string.Format(LanguageService.T("run.phase.planning"), itemsScanned, Path.GetFileName(currentPath)); // pour dire à l'user que on prepare
             }
-        );// error
+        );
         
         IsPlanning = false;
         PhaseMessage = LanguageService.T("run.phase.copying");
@@ -170,7 +171,7 @@ public class ActiveJob : BackupJob
                 FileCopied?.Invoke(file.SourceFullPath, destinationPath);
             }
         );
-        
+
         PhaseMessage = LanguageService.T("run.phase.completed");
         Console.WriteLine();
         float totalCopied = plan.TotalBytes - SizeFileRemaining;
