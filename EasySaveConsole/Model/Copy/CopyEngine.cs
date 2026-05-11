@@ -26,8 +26,10 @@ namespace EasySaveConsole
         {
             if (plan == null || jobName == null)
             {
+                Console.WriteLine("nooooo");
                 throw new ArgumentNullException(nameof(plan), LanguageService.T("error.copyengine.arguments.null"));
             }
+            Console.WriteLine("gdhjfkl");
             Directory.CreateDirectory(plan.TargetRoot);
 
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
