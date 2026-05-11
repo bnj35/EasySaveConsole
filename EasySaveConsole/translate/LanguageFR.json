@@ -23,7 +23,10 @@
         "section": "Travaux de sauvegarde",
         "run": "Exécuter la sélection",
         "delete": "Supprimer",
-        "running": "Travaux en cours :"
+        "running": "Travaux en cours :",
+        "pause": "Pause",
+        "resume": "Reprendre",
+        "stop": "Arrêter"
       },
       "remaining.files": "Fichiers restants : {0}"
     },
@@ -39,7 +42,8 @@
       "select.run": "Veuillez sélectionner un ou plusieurs travaux à exécuter",
       "select.delete": "Veuillez sélectionner un travail à supprimer",
       "error": "Erreur : {0}",
-      "error.run": "Erreur lors de l'exécution du travail '{0}' : {1}"
+      "error.run": "Erreur lors de l'exécution du travail '{0}' : {1}",
+      "job.stopped": "Travail '{0}' arrêté"
     }
   },
   "settings": {

@@ -99,13 +99,36 @@
             <ListBox x:Name="ActiveJobsList">
                 <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="local:ActiveJob">
-                        <StackPanel Margin="4" Spacing="4">
+                        <StackPanel Margin="4" Spacing="2">
                             <TextBlock Text="{Binding Name}" FontWeight="Bold" />
-                                <TextBlock Text="{Binding PhaseMessage}" FontSize="11" />
-                                <ProgressBar Value="{Binding Progression}" IsIndeterminate="{Binding IsPlanning}" Height="12" />
+                            <TextBlock Text="{Binding PhaseMessage}" FontSize="11" Foreground="Gray" />
+                            <Grid ColumnDefinitions="*,Auto">
+                                <ProgressBar Grid.Column="0"
+                                             Value="{Binding Progression}"
+                                             IsIndeterminate="{Binding IsPlanning}"
+                                             Height="14"
+                                             VerticalAlignment="Center"
+                                             Margin="0,0,6,0" />
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
+                                    <Button IsVisible="{Binding !IsPaused}"
+                                            Tag="{Binding}" Click="PauseButton_Click"
+                                            Content="⏸"
+                                            ToolTip.Tip="{Binding [main.jobs.list.pause], Source={x:Static local:LanguageService.Instance}}"
+                                            Padding="6,2" FontSize="13" />
+                                    <Button IsVisible="{Binding IsPaused}"
+                                            Tag="{Binding}" Click="ResumeButton_Click"
+                                            Content="▶"
+                                            ToolTip.Tip="{Binding [main.jobs.list.resume], Source={x:Static local:LanguageService.Instance}}"
+                                            Padding="6,2" FontSize="13" />
+                                    <Button Tag="{Binding}" Click="StopButton_Click"
+                                            Content="⏹"
+                                            ToolTip.Tip="{Binding [main.jobs.list.stop], Source={x:Static local:LanguageService.Instance}}"
+                                            Padding="6,2" FontSize="13" />
+                                </StackPanel>
+                            </Grid>
                             <TextBlock
-                                    Text="{Binding NumberFilesRemaining, Converter={StaticResource RemainingFilesConverter}}"
-                                    FontSize="11" />
+                                Text="{Binding NumberFilesRemaining, Converter={StaticResource RemainingFilesConverter}}"
+                                FontSize="11" />
                         </StackPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>

@@ -16,7 +16,7 @@ namespace EasyLog
         private readonly string _logDirectory;
 
         public EasyLogger(string logDirectory)
-        { 
+        {
             _logDirectory = logDirectory;
         }
 
@@ -41,7 +41,23 @@ namespace EasyLog
             string fileName = $"{DateTime.Now:yyyy-MM-dd}.xml";
             string fullPath = Path.Combine(_logDirectory, fileName);
 
-            XDocument doc = File.Exists(fullPath) ? XDocument.Load(fullPath) : new XDocument(new XElement("Logs"));
+            XDocument doc;
+            if (File.Exists(fullPath))
+            {
+                try
+                {
+                    doc = XDocument.Load(fullPath);
+                }
+                catch (Exception)
+                {
+                    File.Delete(fullPath);
+                    doc = new XDocument(new XElement("Logs"));
+                }
+            }
+            else
+            {
+                doc = new XDocument(new XElement("Logs"));
+            }
 
             var element = new XElement("Entry",
                 new XElement("Action", entry.Action),
@@ -75,17 +91,13 @@ namespace EasyLog
             if (File.Exists(fullPath))
             {
                 string existingJson = File.ReadAllText(fullPath);
-
-                if (!string.IsNullOrWhiteSpace(existingJson))
+                try
                 {
-                    try
-                    {
-                        entries = JsonSerializer.Deserialize<List<JsonElement>>(existingJson) ?? [];
-                    }
-                    catch (JsonException)
-                    {
-                        entries = [];
-                    }
+                    entries = JsonSerializer.Deserialize<List<JsonElement>>(existingJson) ?? [];
+                }
+                catch (JsonException)
+                {
+                    entries = [];
                 }
             }
 

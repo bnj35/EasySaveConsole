@@ -26,6 +26,7 @@ namespace EasySaveConsole
             Action<double>? OnProgressPercent = null,
             Action<int, int>? OnRemainingChanged = null,
             Action<FileEntry, string, double, double>? OnFileCopied = null,
+            ManualResetEventSlim? pauseEvent = null,
             CancellationToken cancellationToken = default
         )
         {
@@ -36,12 +37,12 @@ namespace EasySaveConsole
 
             Directory.CreateDirectory(plan.TargetRoot);
 
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-
             string[] excludedProcesses = GetExcludedProcesses();
+            using var processPauseEvent = new ManualResetEventSlim(true);
+            using var monitorStopCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             Task? processMonitorTask = excludedProcesses.Length == 0
                 ? null
-                : CheckProcess(excludedProcesses, linkedCts);
+                : MonitorProcesses(excludedProcesses, processPauseEvent, monitorStopCts.Token);
 
             string[] encryptExtensions = GetEncryptExtensions();
 
@@ -53,7 +54,9 @@ namespace EasySaveConsole
 
                 foreach (var ent in plan)
                 {
-                    linkedCts.Token.ThrowIfCancellationRequested();
+                    pauseEvent?.Wait(cancellationToken);
+                    processPauseEvent.Wait(cancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
 
                     if (ent is DirectoryEntry dir)
                     {
@@ -112,7 +115,7 @@ namespace EasySaveConsole
                             {
                                 // pour SemaphoreSlim : _bigFileSemaphore.Wait(linkedCts.Token);
                                 // pour Semaphore : _bigFileSemaphore.WaitOne();
-                                _bigFileSemaphore.Wait(linkedCts.Token);
+                                _bigFileSemaphore.Wait(cancellationToken);
                                 Console.WriteLine($"file : {file} entered in semaphore nb:{_bigFileSemaphore.CurrentCount}");
 
                             }
@@ -150,15 +153,10 @@ namespace EasySaveConsole
                         }
                     }
                 }
-
-            }
-            catch (OperationCanceledException) when (linkedCts.IsCancellationRequested)
-            {
-                throw new OperationCanceledException(LanguageService.T("settings.excludes.processes.exit"), linkedCts.Token);
             }
             finally
             {
-                linkedCts.Cancel();
+                monitorStopCts.Cancel();
 
                 if (processMonitorTask != null)
                 {
@@ -286,16 +284,19 @@ namespace EasySaveConsole
                 .ToArray();
         }
 
-        private static async Task CheckProcess(string[] excludedProcesses, CancellationTokenSource cancellationSource)
+        private static async Task MonitorProcesses(string[] excludedProcesses, ManualResetEventSlim processPauseEvent, CancellationToken cancellationToken)
         {
             using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(500));
 
-            while (!cancellationSource.IsCancellationRequested && await timer.WaitForNextTickAsync(cancellationSource.Token).ConfigureAwait(false))
+            while (await timer.WaitForNextTickAsync(cancellationToken).ConfigureAwait(false))
             {
                 if (IsExcludedProcessRunning(excludedProcesses))
                 {
-                    cancellationSource.Cancel();
-                    return;
+                    processPauseEvent.Reset();
+                }
+                else
+                {
+                    processPauseEvent.Set();
                 }
             }
         }
