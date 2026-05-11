@@ -7,6 +7,10 @@ namespace EasySaveConsole
     {
         private readonly EasyLogger _logger;
         private readonly Settings _settings;
+        private static readonly object _lockSync = new object(); // lock pour éviter les conflits d'accès
+        private static readonly Dictionary<string, ReaderWriterLockSlim> _pathLocks = new();
+
+
 
         public CopyEngine(Settings settings)
         {
@@ -53,44 +57,74 @@ namespace EasySaveConsole
                     if (ent is DirectoryEntry dir)
                     {
                         string destDir = Path.Combine(plan.TargetRoot, dir.RelativePath);
+                        var pathLock = GetPathLock(destDir);
 
-                        if (createdDirectories.Add(destDir) && !Directory.Exists(destDir))
+                        pathLock.EnterWriteLock();
+                        try
                         {
-                            Directory.CreateDirectory(destDir);
-                            _logger.LogDirectoryCreation(jobName, destDir);
+                            if (createdDirectories.Add(destDir) && !Directory.Exists(destDir))
+                            {
+                                Directory.CreateDirectory(destDir);
+                                _logger.LogDirectoryCreation(jobName, destDir);
+                            }
+                            remainingFiles--;
+                            OnRemainingChanged?.Invoke(remainingFiles, remainingBytes);
                         }
-
-                        remainingFiles--;
-                        OnRemainingChanged?.Invoke(remainingFiles, remainingBytes);
-
+                        finally
+                        {
+                            pathLock.ExitWriteLock();
+                        }
                     }
                     else if (ent is FileEntry file)
                     {
                         string destFile = Path.Combine(plan.TargetRoot, file.RelativePath);
                         string? destDir = Path.GetDirectoryName(destFile);
 
-                        if (!string.IsNullOrEmpty(destDir) && createdDirectories.Add(destDir) && !Directory.Exists(destDir))
+                        // Lock du répertoire
+                        if (!string.IsNullOrEmpty(destDir))
                         {
-                            Directory.CreateDirectory(destDir);
-                            _logger.LogDirectoryCreation(jobName, destDir);
+                            var dirLock = GetPathLock(destDir);
+                            dirLock.EnterWriteLock();
+                            try
+                            {
+                                if (createdDirectories.Add(destDir) && !Directory.Exists(destDir))
+                                {
+                                    Directory.CreateDirectory(destDir);
+                                    _logger.LogDirectoryCreation(jobName, destDir);
+                                }
+                            }
+                            finally
+                            {
+                                dirLock.ExitWriteLock();
+                            }
                         }
 
-                        bool shouldEncrypt = IsExtensionToEncrypt(file.SourceFullPath, encryptExtensions);
-                        var (transferMs, encryptMs) = CopyFileWithTiming(file.SourceFullPath, destFile, type, shouldEncrypt);
-
-                        remainingBytes -= (int)file.LengthBytes;
-                        remainingFiles--;
-
-                        OnRemainingChanged?.Invoke(remainingFiles, remainingBytes);
-
-                        if (plan.TotalBytes > 0)
+                        // Lock du fichier
+                        var fileLock = GetPathLock(destFile);
+                        fileLock.EnterWriteLock();
+                        try
                         {
-                            double done = (double)(plan.TotalBytes - remainingBytes) / plan.TotalBytes;
-                            OnProgressPercent?.Invoke(done * 100.0);
-                        }
+                            bool shouldEncrypt = IsExtensionToEncrypt(file.SourceFullPath, encryptExtensions);
+                            var (transferMs, encryptMs) = CopyFileWithTiming(file.SourceFullPath, destFile, type, shouldEncrypt);
 
-                        _logger.LogFileCopy(jobName, file.SourceFullPath, destFile, file.LengthBytes, transferMs, encryptMs);
-                        OnFileCopied?.Invoke(file, destFile, transferMs, encryptMs);
+                            remainingBytes -= (int)file.LengthBytes;
+                            remainingFiles--;
+
+                            OnRemainingChanged?.Invoke(remainingFiles, remainingBytes);
+
+                            if (plan.TotalBytes > 0)
+                            {
+                                double done = (double)(plan.TotalBytes - remainingBytes) / plan.TotalBytes;
+                                OnProgressPercent?.Invoke(done * 100.0);
+                            }
+
+                            _logger.LogFileCopy(jobName, file.SourceFullPath, destFile, file.LengthBytes, transferMs, encryptMs);
+                            OnFileCopied?.Invoke(file, destFile, transferMs, encryptMs);
+                        }
+                        finally
+                        {
+                            fileLock.ExitWriteLock();
+                        }
                     }
                 }
 
@@ -168,6 +202,20 @@ namespace EasySaveConsole
             elapsedTime = time.Elapsed.TotalMilliseconds;
 
             return (elapsedTime, encryptTime);
+        }
+
+        private static ReaderWriterLockSlim GetPathLock(string path)
+        {
+            lock (_lockSync)
+            {
+                string normalized = Path.GetFullPath(path).ToLowerInvariant();
+                if (!_pathLocks.TryGetValue(normalized, out var lockObj))
+                {
+                    lockObj = new ReaderWriterLockSlim();
+                    _pathLocks[normalized] = lockObj;
+                }
+                return lockObj;
+            }
         }
 
         public static IEqualityComparer<string> GetPathComparer()

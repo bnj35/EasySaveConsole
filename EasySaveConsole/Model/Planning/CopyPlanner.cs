@@ -20,11 +20,6 @@ namespace EasySaveConsole
 
             bool isFile = false;
 
-            if (File.Exists(sourceFull))
-            {
-                isFile = true;
-            }
-
             CopyPlan plan = new CopyPlan(sourceFull, targetFull);
 
             var parameters = new EnumerationOptions
@@ -37,7 +32,7 @@ namespace EasySaveConsole
 
             IEnumerable<string> list = Enumerable.Empty<string>();;
 
-            if (isFile)
+            if (File.Exists(sourceFull))
             {
                 list = list.Append(sourceFull);
             }
