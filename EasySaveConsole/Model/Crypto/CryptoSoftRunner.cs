@@ -1,11 +1,14 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 
 namespace EasySaveConsole
 {
     public static class CryptoSoftRunner
     {
+        private static readonly object _cryptoLock = new object();
+
         private static string ResolveCryptoSoftPath()
         {
             string localPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CryptoSoft.exe");
@@ -32,7 +35,7 @@ namespace EasySaveConsole
             if (!File.Exists(exePath))
                 return -1;
 
-            Stopwatch sw = Stopwatch.StartNew();
+            Stopwatch sw = new Stopwatch();
 
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
@@ -46,19 +49,23 @@ namespace EasySaveConsole
 
             try
             {
-                using Process? process = Process.Start(startInfo);
-                if (process == null)
-                    return -2;
+                lock (_cryptoLock)
+                {
+                    sw.Restart();
+                    using Process? process = Process.Start(startInfo);
+                    if (process == null)
+                        return -2;
 
-                process.StandardError.ReadToEnd();
-                process.StandardOutput.ReadToEnd();
-                process.WaitForExit(60000);
-                sw.Stop();
+                    process.StandardError.ReadToEnd();
+                    process.StandardOutput.ReadToEnd();
+                    process.WaitForExit(60000);
+                    sw.Stop();
 
-                if (process.ExitCode != 0)
-                    return -Math.Abs(process.ExitCode);
+                    if (process.ExitCode != 0)
+                        return -Math.Abs(process.ExitCode);
 
-                return sw.Elapsed.TotalMilliseconds;
+                    return sw.Elapsed.TotalMilliseconds;
+                }
             }
             catch
             {
