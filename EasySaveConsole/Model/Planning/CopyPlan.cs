@@ -1,6 +1,7 @@
+using System.Collections;
 namespace EasySaveConsole
 {
-    public sealed class CopyPlan
+    public sealed class CopyPlan: IEnumerable
     {
         public required string SourceRoot { get; init; }
         public required string TargetRoot { get; init; }
@@ -20,6 +21,12 @@ namespace EasySaveConsole
             TargetRoot = targetRoot;
         }
 
+        // pour avoir les types des entrées dans engine
+        public IEnumerator GetEnumerator()
+        {
+            foreach (var dir in Directories) yield return dir;
+            foreach (var file in Files) yield return file;
+        }
         public void Validate()
         {
             if (string.IsNullOrWhiteSpace(SourceRoot))

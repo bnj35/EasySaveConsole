@@ -127,8 +127,6 @@ public class ActiveJob : BackupJob
         PhaseMessage = LanguageService.T("run.phase.planning");
         PlanningItemsScanned = 0;
 
-        Console.WriteLine("aj1");
-
         CopyPlan plan = CopyPlanner.Build(
             SourceDir,
             TargetDir,
@@ -138,7 +136,6 @@ public class ActiveJob : BackupJob
             }
         );// error
         
-        Console.WriteLine("aj2");
         IsPlanning = false;
         PhaseMessage = LanguageService.T("run.phase.copying");
 
@@ -173,8 +170,7 @@ public class ActiveJob : BackupJob
                 FileCopied?.Invoke(file.SourceFullPath, destinationPath);
             }
         );
-                Console.WriteLine("aj3");
-
+        
         PhaseMessage = LanguageService.T("run.phase.completed");
         Console.WriteLine();
         float totalCopied = plan.TotalBytes - SizeFileRemaining;

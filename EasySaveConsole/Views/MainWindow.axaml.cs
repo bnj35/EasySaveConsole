@@ -103,9 +103,7 @@ public partial class MainWindow : Window
                         activeJobs.Add(activeJob);
                     });
 
-                    _viewModel.RunJob(activeJob);//error
-
-                    Console.WriteLine("c'est bon");
+                    _viewModel.RunJob(activeJob);
 
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {

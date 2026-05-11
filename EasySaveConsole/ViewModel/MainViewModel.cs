@@ -64,7 +64,7 @@ public sealed class MainViewModel
     {
         void OnFileCopied(string source, string dest) => _statusLogger.UpdateActiveJob(active, source, dest);
         active.FileCopied += OnFileCopied;
-        active.RunJob(_copyEngine);//error
+        active.RunJob(_copyEngine);
         active.FileCopied -= OnFileCopied;
         _statusLogger.UpdateInactiveJob(active, true);
     }
