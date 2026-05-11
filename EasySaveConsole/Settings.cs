@@ -9,6 +9,8 @@ public sealed class Settings
     public StatusFileSettings StatusFileSettings { get; set; } = new();
     public EasyLogSettings EasyLogSettings { get; set; } = new();
     public ProcessExclusionSettings ProcessExclusionSettings { get; set; } = new();
+
+    public int BigFileSize {get; set; } = 10; //par défaut histoire de mettre quelquechose 
     public string EncryptExtensions { get; set; } = ".txt;.pdf";
 
 }

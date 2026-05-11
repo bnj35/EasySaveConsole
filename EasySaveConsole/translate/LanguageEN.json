@@ -42,6 +42,7 @@
   },
   "settings": {
     "title": "Settings",
+    "transfer.size.label": "Large file size (KB):",
     "language.label": "Language:",
     "log.format.label": "Log File Format:",
     "log.dir.label": "Log Directory:",
