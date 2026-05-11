@@ -5,8 +5,10 @@
     "jobs": {
       "create": {
         "section": "Créer un nouveau travail",
-        "name.label": "Nom du travail :",
-        "name.placeholder": "Entrez le nom du travail",
+        "name":{
+          "label":"Nom du travail :",
+          "placeholder":"Entrez le nom du travail"
+        },
         "source.label": "Répertoire source :",
         "path.placeholder": "Chemin complet",
         "target.label": "Répertoire cible :",

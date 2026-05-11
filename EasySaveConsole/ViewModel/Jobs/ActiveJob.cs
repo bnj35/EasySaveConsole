@@ -133,10 +133,10 @@ public class ActiveJob : BackupJob
             (itemsScanned, currentPath) =>
             {
                 PlanningItemsScanned = itemsScanned;
+                PhaseMessage = string.Format(LanguageService.T("run.phase.planning"), itemsScanned, Path.GetFileName(currentPath)); // pour dire à l'user que on prepare
             }
         );
-        // pas de blocage
-
+        
         IsPlanning = false;
         PhaseMessage = LanguageService.T("run.phase.copying");
 

@@ -69,6 +69,7 @@ public partial class MainWindow : Window
 
         var selectedJobs = JobsList.SelectedItems?.OfType<BackupJob>().ToList() ?? [];
 
+
         if (selectedJobs.Count == 0)
         {
             UpdateStatus(LanguageService.T("main.status.select.run"));
@@ -86,7 +87,6 @@ public partial class MainWindow : Window
     {
         var tasks = new List<Task>();
         bool allJobsSucceeded = true;
-
         //une task par job
         foreach (var job in selectedJobs)
         {
@@ -118,7 +118,6 @@ public partial class MainWindow : Window
                     {
                         if (activeJob != null)
                             activeJobs.Remove(activeJob);
-
                         UpdateStatus(string.Format(LanguageService.T("main.status.error.run"), job.Name, ex.Message));
                     });
                 }

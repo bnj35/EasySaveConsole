@@ -28,9 +28,11 @@ namespace EasySaveConsole
             {
                 throw new ArgumentNullException(nameof(plan), LanguageService.T("error.copyengine.arguments.null"));
             }
+
             Directory.CreateDirectory(plan.TargetRoot);
 
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
             string[] excludedProcesses = GetExcludedProcesses();
             Task? processMonitorTask = excludedProcesses.Length == 0
                 ? null
@@ -41,53 +43,55 @@ namespace EasySaveConsole
             var createdDirectories = new HashSet<string>(GetPathComparer());
             try
             {
-                foreach (DirectoryEntry dir in plan.Directories)
-                {
-                    linkedCts.Token.ThrowIfCancellationRequested();
-
-                    string destDir = Path.Combine(plan.TargetRoot, dir.RelativePath);
-
-                    if (createdDirectories.Add(destDir) && !Directory.Exists(destDir))
-                    {
-                        Directory.CreateDirectory(destDir);
-                        _logger.LogDirectoryCreation(jobName, destDir);
-                    }
-                }
-
-
                 int remainingBytes = plan.TotalBytes;
                 int remainingFiles = plan.TotalFiles;
 
-                foreach (FileEntry file in plan.Files)
+                foreach (var ent in plan)
                 {
                     linkedCts.Token.ThrowIfCancellationRequested();
 
-                    string destFile = Path.Combine(plan.TargetRoot, file.RelativePath);
-                    string? destDir = Path.GetDirectoryName(destFile);
-
-                    if (!string.IsNullOrEmpty(destDir) && createdDirectories.Add(destDir) && !Directory.Exists(destDir))
+                    if (ent is DirectoryEntry dir)
                     {
-                        Directory.CreateDirectory(destDir);
-                        _logger.LogDirectoryCreation(jobName, destDir);
+                        string destDir = Path.Combine(plan.TargetRoot, dir.RelativePath);
+
+                        if (createdDirectories.Add(destDir) && !Directory.Exists(destDir))
+                        {
+                            Directory.CreateDirectory(destDir);
+                            _logger.LogDirectoryCreation(jobName, destDir);
+                        }
+
+                        remainingFiles--;
+                        OnRemainingChanged?.Invoke(remainingFiles, remainingBytes);
+
                     }
-
-                    bool shouldEncrypt = IsExtensionToEncrypt(file.SourceFullPath, encryptExtensions);
-                    var (transferMs, encryptMs) = CopyFileWithTiming(file.SourceFullPath, destFile, type, shouldEncrypt);
-
-                    remainingBytes -= (int)file.LengthBytes;
-                    remainingFiles--;
-
-                    OnRemainingChanged?.Invoke(remainingFiles, remainingBytes);
-
-                    if (plan.TotalBytes > 0)
+                    else if (ent is FileEntry file)
                     {
-                        double done = (double)(plan.TotalBytes - remainingBytes) / plan.TotalBytes;
-                        OnProgressPercent?.Invoke(done * 100.0);
+                        string destFile = Path.Combine(plan.TargetRoot, file.RelativePath);
+                        string? destDir = Path.GetDirectoryName(destFile);
+
+                        if (!string.IsNullOrEmpty(destDir) && createdDirectories.Add(destDir) && !Directory.Exists(destDir))
+                        {
+                            Directory.CreateDirectory(destDir);
+                            _logger.LogDirectoryCreation(jobName, destDir);
+                        }
+
+                        bool shouldEncrypt = IsExtensionToEncrypt(file.SourceFullPath, encryptExtensions);
+                        var (transferMs, encryptMs) = CopyFileWithTiming(file.SourceFullPath, destFile, type, shouldEncrypt);
+
+                        remainingBytes -= (int)file.LengthBytes;
+                        remainingFiles--;
+
+                        OnRemainingChanged?.Invoke(remainingFiles, remainingBytes);
+
+                        if (plan.TotalBytes > 0)
+                        {
+                            double done = (double)(plan.TotalBytes - remainingBytes) / plan.TotalBytes;
+                            OnProgressPercent?.Invoke(done * 100.0);
+                        }
+
+                        _logger.LogFileCopy(jobName, file.SourceFullPath, destFile, file.LengthBytes, transferMs, encryptMs);
+                        OnFileCopied?.Invoke(file, destFile, transferMs, encryptMs);
                     }
-
-                    _logger.LogFileCopy(jobName, file.SourceFullPath, destFile, file.LengthBytes, transferMs, encryptMs);
-
-                    OnFileCopied?.Invoke(file, destFile, transferMs, encryptMs);
                 }
 
             }
@@ -178,8 +182,8 @@ namespace EasySaveConsole
             if (!string.IsNullOrWhiteSpace(exts))
             {
                 return exts.Split(new[] { ';', ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                           .Select(e => e.Trim().ToLowerInvariant())
-                           .ToArray();
+                            .Select(e => e.Trim().ToLowerInvariant())
+                            .ToArray();
             }
             return Array.Empty<string>();
         }
@@ -187,9 +191,9 @@ namespace EasySaveConsole
         private static bool IsExtensionToEncrypt(string filePath, string[] encryptExtensions)
         {
             if (encryptExtensions.Length == 0) return false;
-            
+
             string extension = Path.GetExtension(filePath).ToLowerInvariant();
-            
+
             // Tolère si l'utilisateur a écrit "txt" sans le point "."
             return encryptExtensions.Any(ext => extension == ext || extension == "." + ext);
         }
