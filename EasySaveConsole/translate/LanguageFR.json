@@ -45,6 +45,7 @@
   "settings": {
     "title": "Paramètres",
     "language.label": "Langue :",
+    "transfer.size.label": "Taille d'un gros fichier (KB) :",
     "log.format.label": "Format des fichiers de log :",
     "log.storage": {
       "label": "Mode de stockage des logs :",

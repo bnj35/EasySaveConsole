@@ -68,6 +68,16 @@
                 <TextBox x:Name="EncryptExtensionsInput" PlaceholderText=".txt;.pdf" />
             </StackPanel>
 
+            <StackPanel Spacing="4">
+                <TextBlock
+                    Text="{Binding [settings.transfer.size.label], Source={x:Static local:LanguageService.Instance}}"
+                    FontWeight="SemiBold" />
+                <NumericUpDown
+                    x:Name="BigFileSizeInput"
+                    Minimum="10"
+                    Increment="10" />
+            </StackPanel>
+
         </StackPanel>
     </DockPanel>
 </Window>
