@@ -9,7 +9,8 @@ namespace EasySaveConsole
         private readonly Settings _settings;
         private static readonly object _lockSync = new object(); // lock pour éviter les conflits d'accès
         private static readonly Dictionary<string, ReaderWriterLockSlim> _pathLocks = new();
-
+        private static readonly SemaphoreSlim _bigFileSemaphore = new SemaphoreSlim(2);
+        private long BigFileThresholdBytes => (long)Math.Max(1, _settings.BigFileSize) * 1024 * 1024;
 
 
         public CopyEngine(Settings settings)
@@ -105,21 +106,43 @@ namespace EasySaveConsole
                         try
                         {
                             bool shouldEncrypt = IsExtensionToEncrypt(file.SourceFullPath, encryptExtensions);
-                            var (transferMs, encryptMs) = CopyFileWithTiming(file.SourceFullPath, destFile, type, shouldEncrypt);
+                            bool isBigFile = file.LengthBytes >= BigFileThresholdBytes;
 
-                            remainingBytes -= (int)file.LengthBytes;
-                            remainingFiles--;
-
-                            OnRemainingChanged?.Invoke(remainingFiles, remainingBytes);
-
-                            if (plan.TotalBytes > 0)
+                            if (isBigFile)
                             {
-                                double done = (double)(plan.TotalBytes - remainingBytes) / plan.TotalBytes;
-                                OnProgressPercent?.Invoke(done * 100.0);
+                                // pour SemaphoreSlim : _bigFileSemaphore.Wait(linkedCts.Token);
+                                // pour Semaphore : _bigFileSemaphore.WaitOne();
+                                _bigFileSemaphore.Wait(linkedCts.Token);
+                                Console.WriteLine($"file : {file} entered in semaphore nb:{_bigFileSemaphore.CurrentCount}");
+
                             }
 
-                            _logger.LogFileCopy(jobName, file.SourceFullPath, destFile, file.LengthBytes, transferMs, encryptMs);
-                            OnFileCopied?.Invoke(file, destFile, transferMs, encryptMs);
+                            try
+                            {
+                                var (transferMs, encryptMs) = CopyFileWithTiming(file.SourceFullPath, destFile, type, shouldEncrypt);
+
+                                remainingBytes -= (int)file.LengthBytes;
+                                remainingFiles--;
+
+                                OnRemainingChanged?.Invoke(remainingFiles, remainingBytes);
+
+                                if (plan.TotalBytes > 0)
+                                {
+                                    double done = (double)(plan.TotalBytes - remainingBytes) / plan.TotalBytes;
+                                    OnProgressPercent?.Invoke(done * 100.0);
+                                }
+
+                                _logger.LogFileCopy(jobName, file.SourceFullPath, destFile, file.LengthBytes, transferMs, encryptMs);
+                                OnFileCopied?.Invoke(file, destFile, transferMs, encryptMs);
+                            }
+                            finally
+                            {
+                                if (isBigFile)
+                                {
+                                    Console.WriteLine($"file : {file} exited from semaphore nb:{_bigFileSemaphore.CurrentCount}");
+                                    _bigFileSemaphore.Release();
+                                }
+                            }
                         }
                         finally
                         {
@@ -297,8 +320,9 @@ namespace EasySaveConsole
                         return true;
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Console.WriteLine($"{ex}");
                 }
                 finally
                 {

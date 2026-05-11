@@ -131,7 +131,7 @@ public partial class MainWindow : Window
 
             if (allJobsSucceeded)
             {
-                Dispatcher.UIThread.InvokeAsync(() =>
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     UpdateStatus(LanguageService.T("main.status.completed"));
                     RefreshJobList();
@@ -139,7 +139,7 @@ public partial class MainWindow : Window
             }
             else
             {
-                Dispatcher.UIThread.InvokeAsync(() =>
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     RefreshJobList();
                 });

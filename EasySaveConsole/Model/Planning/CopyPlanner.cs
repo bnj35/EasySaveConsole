@@ -18,8 +18,6 @@ namespace EasySaveConsole
             string targetFull = Path.GetFullPath(targetRoot);
             string sourceFull = Path.GetFullPath(sourceRoot);
 
-            bool isFile = false;
-
             CopyPlan plan = new CopyPlan(sourceFull, targetFull);
 
             var parameters = new EnumerationOptions
