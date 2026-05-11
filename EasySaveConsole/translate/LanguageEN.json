@@ -44,6 +44,12 @@
     "title": "Settings",
     "language.label": "Language:",
     "log.format.label": "Log File Format:",
+    "log.storage": {
+      "label": "Logs storage mode:",
+      "local": "Local",
+      "remote": "Remote",
+      "both": "Local and remote"
+    },
     "log.dir.label": "Log Directory:",
     "status.path.label": "Status File Path:",
     "encrypt.extensions.label": "Extensions to encrypt (e.g., .txt;.pdf):",

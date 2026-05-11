@@ -1,67 +1,98 @@
-﻿namespace EasyLog
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Xml.Linq;
+
+namespace EasyLog
 {
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum LogActions
+    {
+        FileCopy,
+        DirectoryCreation
+    }
+
     public class EasyLogger
     {
-        private static EasyLogger? _instance;
-        private readonly ILogWriter writer;
-        private string DateFormat;
+        private readonly string _logDirectory;
 
-        private EasyLogger(ILogWriter writer, string dateFormat)
-        {
-            this.writer = writer;
-            this.DateFormat = dateFormat;
+        public EasyLogger(string logDirectory)
+        { 
+            _logDirectory = logDirectory;
         }
 
-        /// <summary>
-        /// Returns the unique instance of the logger.
-        /// Creates it if it doesn't exist yet.
-        /// </summary>
-        public static EasyLogger GetInstance(string logDirectory, string dateFormat, string logFormat)
+        public void Log(LogEntry? entry, string format)
         {
-            if (_instance == null)
+            if (entry != null)
             {
-                if (logFormat == "xml")
+                Directory.CreateDirectory(_logDirectory);
+                if (format == "xml")
                 {
-                    _instance = new EasyLogger(new XmlLogWriter(logDirectory), dateFormat);
+                    WriteXml(entry);
                 }
                 else
                 {
-                    _instance = new EasyLogger(new JsonLogWriter(logDirectory), dateFormat);
+                    WriteJson(entry);
                 }
             }
-            return _instance;
         }
 
-        /// <summary>
-        /// Logs the copy of a file
-        /// </summary>
-        public void LogFileCopy(string backupName, string sourcePath, string destinationPath, long fileSize, double transferTime, double encryptionTime = 0)
+        private void WriteXml(LogEntry entry)
         {
-            FileLogEntry entry = new FileLogEntry(
-                Configuration.FILE_COPY,
-                backupName,
-                DateTime.Now.ToString(DateFormat),
-                sourcePath,
-                destinationPath,
-                fileSize,
-                transferTime,
-                encryptionTime
-            );
-            writer.Write(entry);
+            string fileName = $"{DateTime.Now:yyyy-MM-dd}.xml";
+            string fullPath = Path.Combine(_logDirectory, fileName);
+
+            XDocument doc = File.Exists(fullPath) ? XDocument.Load(fullPath) : new XDocument(new XElement("Logs"));
+
+            var element = new XElement("Entry",
+                new XElement("Action", entry.Action),
+                new XElement("Name", entry.Name),
+                new XElement("Time", entry.Time));
+
+            if (entry is FileLogEntry file)
+            {
+                element.Add(
+                    new XElement("FileSource", file.FileSource),
+                    new XElement("FileTarget", file.FileTarget),
+                    new XElement("FileSize", file.FileSize),
+                    new XElement("FileTransfertTime", file.FileTransfertTime),
+                    new XElement("EncryptionTime", file.EncryptionTime)
+                );
+            }
+            else if (entry is DirectoryLogEntry dir)
+            {
+                element.Add(new XElement("Target", dir.Target));
+            }
+
+            doc.Root!.Add(element);
+            doc.Save(fullPath);
         }
 
-        /// <summary>
-        /// Logs the creation of a directory
-        /// </summary>
-        public void LogDirectoryCreation(string backupName, string targetPath)
+        private void WriteJson(LogEntry entry)
         {
-            DirectoryLogEntry entry = new DirectoryLogEntry(
-                Configuration.DIRECTORY_CREATION,
-                backupName,
-                DateTime.Now.ToString(DateFormat),
-                targetPath
-            );
-            writer.Write(entry);
+            string fileName = $"{DateTime.Now:yyyy-MM-dd}.json";
+            string fullPath = Path.Combine(_logDirectory, fileName);
+            List<JsonElement> entries = [];
+            if (File.Exists(fullPath))
+            {
+                string existingJson = File.ReadAllText(fullPath);
+
+                if (!string.IsNullOrWhiteSpace(existingJson))
+                {
+                    try
+                    {
+                        entries = JsonSerializer.Deserialize<List<JsonElement>>(existingJson) ?? [];
+                    }
+                    catch (JsonException)
+                    {
+                        entries = [];
+                    }
+                }
+            }
+
+            entries.Add(JsonSerializer.SerializeToElement(entry, entry.GetType()));
+
+            string json = JsonSerializer.Serialize(entries, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(fullPath, json);
         }
     }
 }

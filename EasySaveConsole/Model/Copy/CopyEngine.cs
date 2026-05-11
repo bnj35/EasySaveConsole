@@ -5,7 +5,7 @@ namespace EasySaveConsole
 {
     public sealed class CopyEngine
     {
-        private readonly EasyLogger _logger;
+        private readonly Logger _logger;
         private readonly Settings _settings;
         private static readonly object _lockSync = new object(); // lock pour éviter les conflits d'accès
         private static readonly Dictionary<string, ReaderWriterLockSlim> _pathLocks = new();
@@ -14,7 +14,7 @@ namespace EasySaveConsole
 
         public CopyEngine(Settings settings)
         {
-            _logger = EasyLogger.GetInstance(settings.EasyLogSettings.DirectoryPath, settings.DateFormat, settings.DefaultFileFormat);
+            _logger = new Logger(settings);
             _settings = settings;
         }
 

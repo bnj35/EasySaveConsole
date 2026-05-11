@@ -46,16 +46,22 @@
     "title": "Paramètres",
     "language.label": "Langue :",
     "log.format.label": "Format des fichiers de log :",
+    "log.storage": {
+      "label": "Mode de stockage des logs :",
+      "local": "Local",
+      "remote": "Distant",
+      "both": "Local et distant"
+    },
     "log.dir.label": "Répertoire des logs :",
     "status.path.label": "Chemin du fichier de statut :",
     "encrypt.extensions.label": "Extensions à chiffrer (ex: .txt;.pdf) :",
     "save": "Enregistrer",
     "cancel": "Annuler",
-    "excludes":{
-      "processes":{
-        "label":"Processus exclus",
-        "placeholder":"ex: notepad, calc",
-        "exit":"Opération de copie stoppée : un processus exclus est en cours"
+    "excludes": {
+      "processes": {
+        "label": "Processus exclus",
+        "placeholder": "ex: notepad, calc",
+        "exit": "Opération de copie stoppée : un processus exclus est en cours"
       }
     }
   },
