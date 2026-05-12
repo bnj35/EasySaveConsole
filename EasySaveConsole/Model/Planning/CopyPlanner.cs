@@ -10,7 +10,8 @@ namespace EasySaveConsole
             string sourceRoot,
             string targetRoot,
             Action<int, string>? onItemScanned = null,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            string? priorityExtensions = null)
         {
             PathGuard.IsLooping(sourceRoot, targetRoot);
 
@@ -59,6 +60,29 @@ namespace EasySaveConsole
                     onItemScanned?.Invoke(plan.Directories.Count + plan.Files.Count, relativeDir);
                 }
             }
+
+            if (!string.IsNullOrWhiteSpace(priorityExtensions))
+            {
+                var exts = priorityExtensions
+                    .Split(new[] { ';', ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(e => e.Trim().ToLowerInvariant())
+                    .ToArray();
+
+                if (exts.Length > 0)
+                {
+                    var sortedFiles = plan.Files
+                        .OrderByDescending(f => 
+                        {
+                            string ext = Path.GetExtension(f.SourceFullPath).ToLowerInvariant();
+                            return exts.Any(e => ext == e || ext == "." + e);
+                        })
+                        .ToList();
+                    
+                    plan.Files.Clear();
+                    plan.Files.AddRange(sortedFiles);
+                }
+            }
+
             plan.Validate();
 
             return plan;

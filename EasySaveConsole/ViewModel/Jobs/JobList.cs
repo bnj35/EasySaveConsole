@@ -52,7 +52,7 @@ public class Joblist
             if (!File.Exists(filePathWithExtension)) return list;
             var json = File.ReadAllText(filePathWithExtension);
             if (string.IsNullOrWhiteSpace(json)) return list;
-
+            
             var dict = JsonSerializer.Deserialize<Dictionary<string, LogEntryBackupJob>>(json, _jsonOptions);
             if (dict == null) return list;
 

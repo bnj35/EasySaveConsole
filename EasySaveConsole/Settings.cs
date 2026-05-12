@@ -12,6 +12,7 @@ public sealed class Settings
     public ProcessExclusionSettings ProcessExclusionSettings { get; set; } = new();
 
     public int BigFileSize {get; set; } = 10; //par défaut histoire de mettre quelquechose 
+    public string PriorityExtensions { get; set; } = ".docx;.xlsx";
     public string EncryptExtensions { get; set; } = ".txt;.pdf";
 
 }
