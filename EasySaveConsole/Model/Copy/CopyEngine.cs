@@ -35,16 +35,19 @@ namespace EasySaveConsole
                 throw new ArgumentNullException(nameof(plan), LanguageService.T("error.copyengine.arguments.null"));
             }
 
-            DriveInfo drive = new DriveInfo(plan.TargetRoot);
-
-            long freeSpace = drive.AvailableFreeSpace;
-            long requiredSpace = plan.TotalBytes;
-
-            if (freeSpace < requiredSpace)
+            if (OperatingSystem.IsWindows())
             {
-                throw new InvalidOperationException();
-            }
 
+                DriveInfo drive = new DriveInfo(plan.TargetRoot);
+
+                long freeSpace = drive.AvailableFreeSpace;
+                long requiredSpace = plan.TotalBytes;
+
+                if (freeSpace < requiredSpace)
+                {
+                    throw new InvalidOperationException();
+                }
+            }
             Directory.CreateDirectory(plan.TargetRoot);
 
             string[] excludedProcesses = GetExcludedProcesses();
