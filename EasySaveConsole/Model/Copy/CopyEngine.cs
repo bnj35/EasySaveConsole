@@ -45,7 +45,7 @@ namespace EasySaveConsole
 
                 if (freeSpace < requiredSpace)
                 {
-                    throw new InvalidOperationException("Espace insuffisant sur le disque cible.");
+                    throw new InvalidOperationException();
                 }
             }
             Directory.CreateDirectory(plan.TargetRoot);
