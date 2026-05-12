@@ -110,10 +110,18 @@ public partial class MainWindow : Window
                         activeJobs.Remove(activeJob);
                     });
                 }
+                catch (OperationCanceledException)
+                {
+                    Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        if (activeJob != null)
+                            activeJobs.Remove(activeJob);
+                        UpdateStatus(string.Format(LanguageService.T("main.status.job.stopped"), job.Name));
+                    });
+                }
                 catch (Exception ex)
                 {
                     allJobsSucceeded = false;
-
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         if (activeJob != null)
@@ -183,6 +191,30 @@ public partial class MainWindow : Window
             return;
 
         JobsList.ItemsSource = new ObservableCollection<BackupJob>(_viewModel.GetAllJobs());
+    }
+
+    private void PauseButton_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is ActiveJob job)
+        {
+            job.Pause();
+        }
+    }
+
+    private void ResumeButton_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is ActiveJob job)
+        {
+            job.Resume();
+        }
+    }
+
+    private void StopButton_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is ActiveJob job)
+        {
+            job.Stop();
+        }
     }
 
     private void UpdateStatus(string message) => StatusMessage.Text = message;

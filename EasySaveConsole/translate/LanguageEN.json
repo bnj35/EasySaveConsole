@@ -21,7 +21,10 @@
         "section": "Backup Jobs",
         "run": "Run Selected",
         "delete": "Delete",
-        "running": "Running Jobs:"
+        "running": "Running Jobs:",
+        "pause": "Pause",
+        "resume": "Resume",
+        "stop": "Stop"
       },
       "remaining.files": "Remaining files: {0}"
     },
@@ -37,7 +40,8 @@
       "select.run": "Please select one or more jobs to run",
       "select.delete": "Please select a job to delete",
       "error": "Error: {0}",
-      "error.run": "Error running job '{0}': {1}"
+      "error.run": "Error running job '{0}': {1}",
+      "job.stopped": "Job '{0}' stopped"
     }
   },
   "settings": {
