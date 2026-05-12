@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:EasySaveConsole"
+    xmlns:material="using:Material.Icons.Avalonia"
     x:Class="EasySaveConsole.MainWindow"
     Width="900" Height="650"
     Title="{Binding [main.title], Source={x:Static local:LanguageService.Instance}}">
@@ -112,18 +113,21 @@
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
                                     <Button IsVisible="{Binding !IsPaused}"
                                             Tag="{Binding}" Click="PauseButton_Click"
-                                            Content="⏸"
                                             ToolTip.Tip="{Binding [main.jobs.list.pause], Source={x:Static local:LanguageService.Instance}}"
-                                            Padding="6,2" FontSize="13" />
+                                            Padding="6,2" FontSize="13">
+                                            <material:MaterialIcon Kind="Pause" Width="16" Height="16" />
+                                    </Button>
                                     <Button IsVisible="{Binding IsPaused}"
                                             Tag="{Binding}" Click="ResumeButton_Click"
-                                            Content="▶"
                                             ToolTip.Tip="{Binding [main.jobs.list.resume], Source={x:Static local:LanguageService.Instance}}"
-                                            Padding="6,2" FontSize="13" />
+                                            Padding="6,2">
+                                        <material:MaterialIcon Kind="Play" Width="16" Height="16" />
+                                    </Button>
                                     <Button Tag="{Binding}" Click="StopButton_Click"
-                                            Content="⏹"
                                             ToolTip.Tip="{Binding [main.jobs.list.stop], Source={x:Static local:LanguageService.Instance}}"
-                                            Padding="6,2" FontSize="13" />
+                                            Padding="6,2">
+                                        <material:MaterialIcon Kind="Stop" Width="16" Height="16" />
+                                    </Button>
                                 </StackPanel>
                             </Grid>
                             <TextBlock

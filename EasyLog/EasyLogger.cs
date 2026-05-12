@@ -14,6 +14,7 @@ namespace EasyLog
     public class EasyLogger
     {
         private readonly string _logDirectory;
+        private static readonly object _fileLock = new();
 
         public EasyLogger(string logDirectory)
         {
@@ -41,24 +42,6 @@ namespace EasyLog
             string fileName = $"{DateTime.Now:yyyy-MM-dd}.xml";
             string fullPath = Path.Combine(_logDirectory, fileName);
 
-            XDocument doc;
-            if (File.Exists(fullPath))
-            {
-                try
-                {
-                    doc = XDocument.Load(fullPath);
-                }
-                catch (Exception)
-                {
-                    File.Delete(fullPath);
-                    doc = new XDocument(new XElement("Logs"));
-                }
-            }
-            else
-            {
-                doc = new XDocument(new XElement("Logs"));
-            }
-
             var element = new XElement("Entry",
                 new XElement("Action", entry.Action),
                 new XElement("Name", entry.Name),
@@ -79,32 +62,59 @@ namespace EasyLog
                 element.Add(new XElement("Target", dir.Target));
             }
 
-            doc.Root!.Add(element);
-            doc.Save(fullPath);
+            lock (_fileLock)
+            {
+                XDocument doc;
+                if (File.Exists(fullPath))
+                {
+                    try
+                    {
+                        doc = XDocument.Load(fullPath);
+                    }
+                    catch (Exception)
+                    {
+                        File.Delete(fullPath);
+                        doc = new XDocument(new XElement("Logs"));
+                    }
+                }
+                else
+                {
+                    doc = new XDocument(new XElement("Logs"));
+                }
+
+                doc.Root!.Add(element);
+                doc.Save(fullPath);
+            }
         }
 
         private void WriteJson(LogEntry entry)
         {
             string fileName = $"{DateTime.Now:yyyy-MM-dd}.json";
             string fullPath = Path.Combine(_logDirectory, fileName);
-            List<JsonElement> entries = [];
-            if (File.Exists(fullPath))
+
+            var serialized = JsonSerializer.SerializeToElement(entry, entry.GetType());
+
+            lock (_fileLock)
             {
-                string existingJson = File.ReadAllText(fullPath);
-                try
+                List<JsonElement> entries = [];
+                if (File.Exists(fullPath))
                 {
-                    entries = JsonSerializer.Deserialize<List<JsonElement>>(existingJson) ?? [];
+                    string existingJson = File.ReadAllText(fullPath);
+                    try
+                    {
+                        entries = JsonSerializer.Deserialize<List<JsonElement>>(existingJson) ?? [];
+                    }
+                    catch (JsonException)
+                    {
+                        entries = [];
+                    }
                 }
-                catch (JsonException)
-                {
-                    entries = [];
-                }
+
+                entries.Add(serialized);
+
+                string json = JsonSerializer.Serialize(entries, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(fullPath, json);
             }
-
-            entries.Add(JsonSerializer.SerializeToElement(entry, entry.GetType()));
-
-            string json = JsonSerializer.Serialize(entries, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(fullPath, json);
         }
     }
 }

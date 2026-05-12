@@ -122,7 +122,6 @@ public partial class MainWindow : Window
                 catch (Exception ex)
                 {
                     allJobsSucceeded = false;
-
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         if (activeJob != null)
