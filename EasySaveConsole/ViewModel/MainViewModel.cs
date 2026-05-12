@@ -60,13 +60,50 @@ public sealed class MainViewModel
         }
         return new ActiveJob(job.Name, job.SourceDir, job.TargetDir, job.Type, job.DateCreated);
     }
+    public bool CanExecuteJob(BackupJob job)
+    {
+        var priorityExtensions = CopyPlanner.ParsePriorityExtensions(Settings.PriorityExtensions);
+        return PriorityFileManager.CanExecuteNonPriorityJob(job, _jobList, priorityExtensions);
+    }
+    public string GetBlockingReason(BackupJob job)
+    {
+        if (CanExecuteJob(job))
+            return string.Empty;
+
+        var priorityExtensions = CopyPlanner.ParsePriorityExtensions(Settings.PriorityExtensions);
+        var blockingJobs = PriorityFileManager.GetJobsWithPriorityFiles(_jobList, priorityExtensions);
+        
+        if (blockingJobs.Count == 0)
+            return "Extensions prioritaires en attente.";
+        
+        var jobNames = string.Join(", ", blockingJobs.Select(j => $"'{j.Name}'"));
+        return $"Fichiers prioritaires en attente sur : {jobNames}";
+    }
     public void RunJob(ActiveJob active)
     {
+        var priorityExtensions = CopyPlanner.ParsePriorityExtensions(Settings.PriorityExtensions);
+        
+        if (!PriorityFileManager.CanExecuteNonPriorityJob(active, _jobList, priorityExtensions))
+        {
+            var blockingReason = GetBlockingReason(active);
+            throw new InvalidOperationException($"Impossible d'exécuter '{active.Name}'. {blockingReason}");
+        }
+
         void OnFileCopied(string source, string dest) => _statusLogger.UpdateActiveJob(active, source, dest);
         active.FileCopied += OnFileCopied;
-        active.RunJob(_copyEngine);
-        active.FileCopied -= OnFileCopied;
-        _statusLogger.UpdateInactiveJob(active, true);
+        
+        active.IsRunning = true;
+        
+        try
+        {
+            active.RunJobWithPriority(_copyEngine, priorityExtensions);
+        }
+        finally
+        {
+            active.IsRunning = false;
+            active.FileCopied -= OnFileCopied;
+            _statusLogger.UpdateInactiveJob(active, true);
+        }
     }
 
     public void DeleteJob(int index)

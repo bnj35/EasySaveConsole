@@ -177,5 +177,78 @@ public class ActiveJob : BackupJob
         float totalCopied = plan.TotalBytes - SizeFileRemaining;
 
     }
+    public void RunJobWithPriority(CopyEngine engine, List<string> priorityExtensions)
+    {
+        PathGuard.IsLooping(SourceDir, TargetDir);
+        IsPlanning = true;
+        PhaseMessage = LanguageService.T("run.phase.planning");
+        PlanningItemsScanned = 0;
+
+        CopyPlan fullPlan = CopyPlanner.Build(
+            SourceDir,
+            TargetDir,
+            (itemsScanned, currentPath) =>
+            {
+                PlanningItemsScanned = itemsScanned;
+                PhaseMessage = string.Format(LanguageService.T("run.phase.planning"), itemsScanned, Path.GetFileName(currentPath));
+            }
+        );
+        
+        IsPlanning = false;
+        PhaseMessage = LanguageService.T("run.phase.copying");
+
+        TotalFileSize = fullPlan.TotalBytes;
+        NumberFiles = fullPlan.TotalFiles;
+        NumberFilesRemaining = NumberFiles;
+        SizeFileRemaining = TotalFileSize;
+
+        CopyPlan priorityPlan = CopyPlanner.GetPriorityPlan(fullPlan, priorityExtensions);
+        CopyPlan nonPriorityPlan = CopyPlanner.GetNonPriorityPlan(fullPlan, priorityExtensions);
+
+        if (priorityPlan.Files.Count > 0 || priorityPlan.Directories.Count > 0)
+        {
+            Console.WriteLine($"[{Name}] Exécution des fichiers prioritaires ({priorityPlan.Files.Count} fichiers)");
+            ExecutePlan(engine, priorityPlan);
+        }
+
+        // Ensuite les fichiers non-prioritaires
+        if (nonPriorityPlan.Files.Count > 0 || nonPriorityPlan.Directories.Count > 0)
+        {
+            Console.WriteLine($"[{Name}] Exécution des fichiers non-prioritaires ({nonPriorityPlan.Files.Count} fichiers)");
+            ExecutePlan(engine, nonPriorityPlan);
+        }
+
+        PhaseMessage = LanguageService.T("run.phase.completed");
+        Console.WriteLine();
+    }
+    private void ExecutePlan(CopyEngine engine, CopyPlan plan)
+    {
+        engine.Execute(
+            plan,
+            Name,
+            Type,
+            OnProgressPercent: percent =>
+            {
+                Progression = percent;
+            },
+            OnRemainingChanged: (filesRemaining, bytesRemaining) =>
+            {
+                NumberFilesRemaining = filesRemaining;
+                SizeFileRemaining = (float)bytesRemaining;
+            },
+            OnFileCopied: (file, destinationPath, transferMs, encryptMs) =>
+            {
+                AddressesOfFiles?.Add(file.SourceFullPath);
+                DestinationOfFiles?.Add(destinationPath);
+
+                LastFileCopied = Path.GetFileName(destinationPath);
+                LastCopiedBytes = (int)file.LengthBytes;
+                LastTransferMs = transferMs;
+                LastEncryptionMs = encryptMs;
+
+                FileCopied?.Invoke(file.SourceFullPath, destinationPath);
+            }
+        );
+    }
 
 }
