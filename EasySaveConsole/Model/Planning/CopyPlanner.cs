@@ -63,5 +63,43 @@ namespace EasySaveConsole
 
             return plan;
         }
+        public static CopyPlan GetPriorityPlan(CopyPlan originalPlan, List<string> priorityExtensions)
+        {
+            CopyPlan priorityPlan = new CopyPlan(originalPlan.SourceRoot, originalPlan.TargetRoot);
+            
+            priorityPlan.Directories.AddRange(originalPlan.Directories);
+            
+            var priorityFiles = originalPlan.GetPriorityFiles(priorityExtensions);
+            priorityPlan.Files.AddRange(priorityFiles);
+            
+            priorityPlan.TotalBytes = priorityFiles.Sum(f => (int)f.LengthBytes);
+
+            return priorityPlan;
+        }
+        public static CopyPlan GetNonPriorityPlan(CopyPlan originalPlan, List<string> priorityExtensions)
+        {
+            CopyPlan nonPriorityPlan = new CopyPlan(originalPlan.SourceRoot, originalPlan.TargetRoot);
+            
+            nonPriorityPlan.Directories.AddRange(originalPlan.Directories);
+            
+            var nonPriorityFiles = originalPlan.GetNonPriorityFiles(priorityExtensions);
+            nonPriorityPlan.Files.AddRange(nonPriorityFiles);
+    
+            nonPriorityPlan.TotalBytes = nonPriorityFiles.Sum(f => (int)f.LengthBytes);
+
+            return nonPriorityPlan;
+        }
+        public static List<string> ParsePriorityExtensions(string extensionsString)
+        {
+            if (string.IsNullOrWhiteSpace(extensionsString))
+                return new List<string>();
+
+            return extensionsString
+                .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .Select(ext => ext.Trim().ToLower())
+                .Where(ext => ext.StartsWith(".") || ext.Length > 0)
+                .Select(ext => ext.StartsWith(".") ? ext : $".{ext}")
+                .ToList();
+        }
     }
 }

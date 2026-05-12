@@ -39,5 +39,23 @@ namespace EasySaveConsole
                 throw new InvalidOperationException(LanguageService.T("error.copyplan.target.empty"));
             }
         }
+        public List<FileEntry> GetPriorityFiles(List<string> priorityExtensions)
+        {
+            return Files.Where(f => IsPriorityFile(f, priorityExtensions)).ToList();
+        }
+
+        public List<FileEntry> GetNonPriorityFiles(List<string> priorityExtensions)
+        {
+            return Files.Where(f => !IsPriorityFile(f, priorityExtensions)).ToList();
+        }
+        private static bool IsPriorityFile(FileEntry file, List<string> priorityExtensions)
+        {
+            if (priorityExtensions == null || priorityExtensions.Count == 0)
+                return false;
+
+            string fileExtension = Path.GetExtension(file.SourceFullPath).ToLower();
+            return priorityExtensions.Any(ext => 
+                ext.Equals(fileExtension, StringComparison.OrdinalIgnoreCase));
+        }
     }
 }
