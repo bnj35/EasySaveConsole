@@ -65,7 +65,7 @@ public sealed class MainViewModel
         void OnFileCopied(string source, string dest)
         {
             _statusLogger.UpdateActiveJob(active, source, dest);
-            Console.WriteLine($"[Copie terminée] {System.IO.Path.GetFileName(source)}");
+            Console.WriteLine($"[Copie terminée] {Path.GetFileName(source)}");
         }
         active.FileCopied += OnFileCopied;
         active.RunJob(_copyEngine, Settings.PriorityExtensions);

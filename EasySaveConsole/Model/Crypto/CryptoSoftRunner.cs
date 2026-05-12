@@ -84,7 +84,6 @@ namespace EasySaveConsole
                 {
                     sw.Restart();
                     using Process? process = Process.Start(startInfo);
-                    Console.WriteLine($"{process}");
                     if (process == null)
                         return -2;
 

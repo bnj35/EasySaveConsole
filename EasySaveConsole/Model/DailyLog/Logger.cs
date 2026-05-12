@@ -16,14 +16,11 @@ public record LogRequest(string Format, LogActions Actions, string Entry);
 
 public class Logger
 {
-	private Socket _socket;
 	private Settings _settings;
 	private EasyLogger _logger;
 
 	public Logger(Settings settings)
 	{
-		_socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-		_socket.Connect(IPAddress.Loopback, 5000);
 		_settings = settings;
 		_logger = new EasyLogger(_settings.EasyLogSettings.DirectoryPath);
 	}
@@ -81,7 +78,18 @@ public class Logger
 
     private void SendLog(string logRequest)
 	{
+		try
+		{
 		byte[] data = Encoding.UTF8.GetBytes(logRequest);
-		_socket.Send(data);
+	// ouvre une socket à chaque fois
+		using Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        socket.Connect(IPAddress.Loopback, 5000);
+		socket.Send(data);
+		}catch( Exception ex)
+		{
+			Console.Error.WriteLine($"socket error Exception={ex}");
+        throw;
+		}
+
 	}
 }

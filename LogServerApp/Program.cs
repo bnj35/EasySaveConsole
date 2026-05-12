@@ -17,8 +17,16 @@ public class Program
         while (true)
         {
             using Socket client = listener.Accept();
+            
             byte[] buffer = new byte[2048];
             int nbBytesReceived = client.Receive(buffer);
+
+            if (nbBytesReceived <= 0)
+            {
+                continue;
+            }
+
+
             string json = Encoding.UTF8.GetString(buffer, 0, nbBytesReceived);
 
             LogRequest? logRequest = JsonSerializer.Deserialize<LogRequest>(json);
