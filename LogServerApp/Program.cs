@@ -10,14 +10,15 @@ public class Program
     {
         EasyLogger logger = new EasyLogger("/app/logs");
 
-        Socket serverSocket = new Socket(SocketType.Dgram, ProtocolType.Udp);
-        IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, 5000);
-        serverSocket.Bind(endPoint);
-        byte[] buffer = new byte[2048];
+        Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        listener.Bind(new IPEndPoint(IPAddress.Any, 5000));
+        listener.Listen(10);
 
         while (true)
         {
-            int nbBytesReceived = serverSocket.Receive(buffer);
+            using Socket client = listener.Accept();
+            byte[] buffer = new byte[2048];
+            int nbBytesReceived = client.Receive(buffer);
             string json = Encoding.UTF8.GetString(buffer, 0, nbBytesReceived);
 
             LogRequest? logRequest = JsonSerializer.Deserialize<LogRequest>(json);

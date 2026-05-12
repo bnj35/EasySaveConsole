@@ -22,7 +22,7 @@ public class Logger
 
 	public Logger(Settings settings)
 	{
-		_socket = new Socket(SocketType.Dgram, ProtocolType.Udp);
+		_socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 		_socket.Connect(IPAddress.Loopback, 5000);
 		_settings = settings;
 		_logger = new EasyLogger(_settings.EasyLogSettings.DirectoryPath);
