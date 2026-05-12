@@ -116,7 +116,6 @@ namespace EasySaveConsole
                                 // pour SemaphoreSlim : _bigFileSemaphore.Wait(linkedCts.Token);
                                 // pour Semaphore : _bigFileSemaphore.WaitOne();
                                 _bigFileSemaphore.Wait(cancellationToken);
-                                Console.WriteLine($"file : {file} entered in semaphore nb:{_bigFileSemaphore.CurrentCount}");
 
                             }
 
@@ -142,7 +141,6 @@ namespace EasySaveConsole
                             {
                                 if (isBigFile)
                                 {
-                                    Console.WriteLine($"file : {file} exited from semaphore nb:{_bigFileSemaphore.CurrentCount}");
                                     _bigFileSemaphore.Release();
                                 }
                             }
