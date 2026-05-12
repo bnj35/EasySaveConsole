@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace EasySaveConsole
@@ -11,7 +12,16 @@ namespace EasySaveConsole
 
         private static string ResolveCryptoSoftPath()
         {
-            string localPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CryptoSoft.exe");
+            string localPath;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                localPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CryptoSoft.exe");
+            }
+            else
+            {
+                localPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CryptoSoft.dll");
+            }
+
             if (File.Exists(localPath))
                 return localPath;
             DirectoryInfo? currentDir = new(AppDomain.CurrentDomain.BaseDirectory);
@@ -33,19 +43,40 @@ namespace EasySaveConsole
             string exePath = ResolveCryptoSoftPath();
 
             if (!File.Exists(exePath))
+            {
                 return -1;
+            }
 
             Stopwatch sw = new Stopwatch();
 
-            ProcessStartInfo startInfo = new ProcessStartInfo
+            bool isDll = exePath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase);//pour mac
+            ProcessStartInfo startInfo;
+            if (isDll)
             {
-                FileName = exePath,
-                Arguments = $"\"{source}\" \"{destination}\" \"{key}\"",
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = "dotnet",
+                    Arguments = $"\"{exePath}\" \"{source}\" \"{destination}\" \"{key}\"",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory
+                };
+            }
+            else
+            {
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = exePath,
+                    Arguments = $"\"{source}\" \"{destination}\" \"{key}\"",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory
+                };
+            }
 
             try
             {
@@ -53,6 +84,7 @@ namespace EasySaveConsole
                 {
                     sw.Restart();
                     using Process? process = Process.Start(startInfo);
+                    Console.WriteLine($"{process}");
                     if (process == null)
                         return -2;
 
@@ -67,8 +99,9 @@ namespace EasySaveConsole
                     return sw.Elapsed.TotalMilliseconds;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"exeption {ex}");
                 return -3;
             }
         }
