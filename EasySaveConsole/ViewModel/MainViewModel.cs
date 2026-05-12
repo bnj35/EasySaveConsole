@@ -62,9 +62,13 @@ public sealed class MainViewModel
     }
     public void RunJob(ActiveJob active)
     {
-        void OnFileCopied(string source, string dest) => _statusLogger.UpdateActiveJob(active, source, dest);
+        void OnFileCopied(string source, string dest)
+        {
+            _statusLogger.UpdateActiveJob(active, source, dest);
+            Console.WriteLine($"[Copie terminée] {System.IO.Path.GetFileName(source)}");
+        }
         active.FileCopied += OnFileCopied;
-        active.RunJob(_copyEngine);
+        active.RunJob(_copyEngine, Settings.PriorityExtensions);
         active.FileCopied -= OnFileCopied;
         _statusLogger.UpdateInactiveJob(active, true);
     }

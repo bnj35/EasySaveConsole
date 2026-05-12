@@ -144,7 +144,7 @@ public class ActiveJob : BackupJob
         PlanningItemsScanned = 0;
     }
 
-    public void RunJob(CopyEngine engine)
+    public void RunJob(CopyEngine engine, string? priorityExtensions = null)
     {
         PathGuard.IsLooping(SourceDir, TargetDir);
         IsPlanning = true;
@@ -159,7 +159,8 @@ public class ActiveJob : BackupJob
                 PlanningItemsScanned = itemsScanned;
                 PhaseMessage = string.Format(LanguageService.T("run.phase.planning"), itemsScanned, Path.GetFileName(currentPath)); // pour dire à l'user que on prepare
             },
-            Cts.Token
+            Cts.Token,
+            priorityExtensions
         );
         
         IsPlanning = false;

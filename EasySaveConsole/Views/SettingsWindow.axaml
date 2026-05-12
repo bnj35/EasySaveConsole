@@ -70,6 +70,13 @@
 
             <StackPanel Spacing="4">
                 <TextBlock
+                    Text="{Binding [settings.priority.extensions.label], Source={x:Static local:LanguageService.Instance}}"
+                    FontWeight="SemiBold" />
+                <TextBox x:Name="PriorityExtensionsInput" PlaceholderText=".exe;.dll" />
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+                <TextBlock
                     Text="{Binding [settings.transfer.size.label], Source={x:Static local:LanguageService.Instance}}"
                     FontWeight="SemiBold" />
                 <NumericUpDown
