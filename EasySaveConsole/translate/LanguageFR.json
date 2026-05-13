@@ -79,7 +79,8 @@
     "copyengine": {
       "arguments": {
         "null": "Le plan et le nom du job sont obligatoires."
-      }
+      },
+      "space":"pas assez de place dans le drive cible"
     },
     "copyplanner": {
       "source": {
