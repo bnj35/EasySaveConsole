@@ -5,6 +5,13 @@ using System.Xml.Linq;
 namespace EasyLog
 {
     [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum LogFileFormats
+    {
+        xml,
+        json,
+    }
+
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum LogActions
     {
         FileCopy,
@@ -21,12 +28,12 @@ namespace EasyLog
             _logDirectory = logDirectory;
         }
 
-        public void Log(LogEntry? entry, string format)
+        public void Log(LogEntry? entry, LogFileFormats format)
         {
             if (entry != null)
             {
                 Directory.CreateDirectory(_logDirectory);
-                if (format == "xml")
+                if (format == LogFileFormats.xml)
                 {
                     WriteXml(entry);
                 }

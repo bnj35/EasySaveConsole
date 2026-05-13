@@ -12,19 +12,19 @@ public sealed class LogEntryActiveJob : LogEntryBackupJob
     public double ProgressPercent { get; set; }
     public int FilesRemaining { get; set; }
     public float BytesRemaining { get; set; }
-    public string CurrentSourceFile { get; set; } = "";
-    public string CurrentDestFile { get; set; } = "";
+    public string CurrentSourceFile { get; set; }
+    public string CurrentDestFile { get; set; }
 
     public LogEntryActiveJob() { }
 
-    public LogEntryActiveJob(ActiveJob job, JobState state, string dateFormat, string currentSource, string currentDest) : base(job, state, dateFormat)
+    public LogEntryActiveJob(ActiveJob job, JobState state, string dateFormat) : base(job, state, dateFormat)
     {
         TotalFiles = job.NumberFiles;
         TotalBytes = job.TotalFileSize;
         ProgressPercent = job.Progression;
         FilesRemaining = job.NumberFilesRemaining;
         BytesRemaining = job.SizeFileRemaining;
-        CurrentSourceFile = currentSource;
-        CurrentDestFile = currentDest;
+        CurrentSourceFile = job.AddressesOfFiles.LastOrDefault();
+        CurrentDestFile = job.DestinationOfFiles.LastOrDefault();
     }
 }

@@ -14,10 +14,7 @@ class Program
         {
             Console.WriteLine("running");
             var settings = App.GetConfiguration();
-            string format = settings.DefaultFileFormat;
-            string statusPath = $"{settings.StatusFileSettings.FilePath}.{format}";
-
-            Joblist joblist = Joblist.LoadFromStatusFile(statusPath);
+            Joblist joblist = Joblist.Load(settings.JobsFilePath);
             MainViewModel viewModel = new MainViewModel(joblist, settings);
 
             var indices = ParseIndices(args[0]);

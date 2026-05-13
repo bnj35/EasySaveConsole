@@ -432,3 +432,4 @@ FodyWeavers.xsd
 .DS_Store
 status.json
 status.xml
+jobs.json

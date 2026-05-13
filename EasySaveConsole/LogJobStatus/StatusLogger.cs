@@ -1,11 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Xml.Linq;
+using EasyLog;
 
 namespace EasySaveConsole;
-
-public enum JobState { Created, End, Active }
-
 public class StatusLogger {
 
     private readonly Settings _settings;
@@ -24,37 +22,38 @@ public class StatusLogger {
         };
     }
 
- 
-
-    public void UpdateInactiveJob(BackupJob job, bool isEnd)
+    public void Update(IReadOnlyList<BackupJob> jobs, ActiveJob? runningJob = null)
     {
-        if (isEnd)
+        foreach (var job in jobs)
         {
-            _jobs[job.Name] = new LogEntryBackupJob(job, JobState.End, _settings.DateFormat);
+            if (runningJob != null && job.Name == runningJob.Name)
+            {
+                _jobs[job.Name] = new LogEntryActiveJob(runningJob, JobState.Active, _settings.DateFormat);
+            }
+            else
+            {
+                _jobs[job.Name] = new LogEntryBackupJob(job, JobState.Inactive, _settings.DateFormat);
+            }
         }
-        else
-        {
-            _jobs[job.Name] = new LogEntryBackupJob(job, JobState.Created, _settings.DateFormat);
-        }
-        Save();
-    }
-
-    public void UpdateActiveJob(ActiveJob job, string sourcePath, string destinationPath)
-    {
-        _jobs[job.Name] = new LogEntryActiveJob(job, JobState.Active, _settings.DateFormat, sourcePath, destinationPath);
         Save();
     }
 
     private void Save()
     {
-        string format = _settings.DefaultFileFormat;
-        string path = $"{_settings.StatusFileSettings.FilePath}.{format}";
+        LogFileFormats format = _settings.LogFileFormat;
+        string basePath = _settings.StatusFileSettings.FilePath;
+        string wrongExtension = format == LogFileFormats.xml ? "json" : "xml";
+        string wrongPath = $"{basePath}.{wrongExtension}";
 
-        if (format == "xml") {
+        if (File.Exists(wrongPath)){
+            File.Delete(wrongPath);
+        }
+
+        string path = $"{basePath}.{format}";
+        if (format == LogFileFormats.xml) {
             WriteXml(path);
         }
-        else
-        {
+        else {
             WriteJson(path);
         }
     }

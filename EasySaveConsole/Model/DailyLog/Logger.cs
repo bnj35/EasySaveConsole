@@ -3,16 +3,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
-[JsonConverter(typeof(JsonStringEnumConverter))]
-public enum LogStorage
-{
-    Remote,
-    Local,
-    Both
-}
-public record LogRequest(string Format, LogActions Actions, string Entry);
+public record LogRequest(LogFileFormats Format, LogActions Actions, string Entry);
 
 public class Logger
 {
@@ -56,18 +48,18 @@ public class Logger
 		LogRequest logRequest;
 		switch (_settings.EasyLogSettings.LogStorage)
 		{
-			case LogStorage.Remote:
-				logRequest = new LogRequest(_settings.DefaultFileFormat, action, JsonSerializer.Serialize(entry));
+			case LogStorageModes.Remote:
+				logRequest = new LogRequest(_settings.LogFileFormat, action, JsonSerializer.Serialize(entry));
 				SendLog(JsonSerializer.Serialize(logRequest));
 				break;
 
-			case LogStorage.Local:
-				_logger.Log(entry, _settings.DefaultFileFormat);
+			case LogStorageModes.Local:
+				_logger.Log(entry, _settings.LogFileFormat);
 				break;
 
-			case LogStorage.Both:
-				_logger.Log(entry, _settings.DefaultFileFormat);
-				logRequest = new LogRequest(_settings.DefaultFileFormat, action, JsonSerializer.Serialize(entry));
+			case LogStorageModes.Both:
+				_logger.Log(entry, _settings.LogFileFormat);
+				logRequest = new LogRequest(_settings.LogFileFormat, action, JsonSerializer.Serialize(entry));
 				SendLog(JsonSerializer.Serialize(logRequest));
 				break;
 
