@@ -36,7 +36,7 @@ namespace EasySaveConsole
                 throw new ArgumentNullException(nameof(plan), LanguageService.T("error.copyengine.arguments.null"));
             }
 
-            if (OperatingSystem.IsWindows())
+            if (IsUnixPath(plan.TargetRoot))
             {
 
                 DriveInfo drive = new DriveInfo(plan.TargetRoot);
