@@ -103,7 +103,7 @@ public class ActiveJob : BackupJob
 
     public List<string>? DestinationOfFiles { get; set; }
 
-    public event Action<string, string>? FileCopied;
+    public event Action? FileCopied;
 
     public CancellationTokenSource Cts { get; } = new();
     public ManualResetEventSlim PauseEvent { get; } = new (true);
@@ -193,13 +193,14 @@ public class ActiveJob : BackupJob
                 LastCopiedBytes = (int)file.LengthBytes;
                 LastTransferMs = transferMs;
                 LastEncryptionMs = encryptMs;
+                LastActionTimestamp = DateTime.Now;
 
-                FileCopied?.Invoke(file.SourceFullPath, destinationPath);
+                FileCopied?.Invoke();
             },
             pauseEvent: PauseEvent,
             cancellationToken: Cts.Token
         );
-
+        LastActionTimestamp = DateTime.Now;
         PhaseMessage = LanguageService.T("run.phase.completed");
         Console.WriteLine();
         float totalCopied = plan.TotalBytes - SizeFileRemaining;

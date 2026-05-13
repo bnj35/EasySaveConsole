@@ -18,6 +18,6 @@ public class LogEntryBackupJob
         SourceDir = job.SourceDir;
         TargetDir = job.TargetDir;
         DateCreated = job.DateCreated.ToString(DateFormat);
-        LastActionTimestamp = DateTime.Now.ToString(DateFormat);
+        LastActionTimestamp = job.LastActionTimestamp.ToString(DateFormat);
     }
 }

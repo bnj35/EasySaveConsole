@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json;
 public class Program
 {
-    public record LogRequest(string Format, LogActions Actions, string Entry);
+    public record LogRequest(LogFileFormats Format, LogActions Actions, string Entry);
     static void Main()
     {
         EasyLogger logger = new EasyLogger("/app/logs");

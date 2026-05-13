@@ -5,7 +5,7 @@ using EasyLog;
 
 public sealed class Settings
 {
-    public string DefaultFileFormat { get; set; } = "json";
+    public LogFileFormats LogFileFormat { get; set; } = LogFileFormats.json;
     public string DateFormat { get; set; } = "dd/MM/yyyy HH:mm:ss";
     public StatusFileSettings StatusFileSettings { get; set; } = new();
     public EasyLogSettings EasyLogSettings { get; set; } = new();
@@ -14,6 +14,7 @@ public sealed class Settings
     public int BigFileSize {get; set; } = 10; //par défaut histoire de mettre quelquechose 
     public string PriorityExtensions { get; set; } = ".docx;.xlsx";
     public string EncryptExtensions { get; set; } = ".txt;.pdf";
+    public string JobsFilePath { get; set; } = "./jobs.json";
 
 }
 
@@ -25,7 +26,7 @@ public sealed class StatusFileSettings
 public sealed class EasyLogSettings
 {
     public string DirectoryPath { get; set; } = "./logs";
-    public LogStorage LogStorage { get; set; } = LogStorage.Both;
+    public LogStorageModes LogStorage { get; set; } = LogStorageModes.Both;
 }
 public sealed class ProcessExclusionSettings
 {

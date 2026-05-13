@@ -6,10 +6,13 @@ public class Joblist
 {
     private readonly List<BackupJob> jobs = new ();
 
+    private record JobEntry(string Name, string SourceDir, string TargetDir, bool Type, string DateCreated);
+
     public void AddJob(BackupJob job)
     {
-        if (job == null)
+        if (job == null) {
             throw new ArgumentNullException(nameof(job), LanguageService.T("error.joblist.job.null"));
+        }
         jobs.Add(job);
     }
 
@@ -41,34 +44,51 @@ public class Joblist
     private static readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = true,
         Converters = { new JsonStringEnumConverter() }
     };
 
-    public static Joblist LoadFromStatusFile(string filePathWithExtension)
+    public static Joblist Load(string filePath)
     {
         var list = new Joblist();
         try
         {
-            if (!File.Exists(filePathWithExtension)) return list;
-            var json = File.ReadAllText(filePathWithExtension);
-            if (string.IsNullOrWhiteSpace(json)) return list;
-            
-            var dict = JsonSerializer.Deserialize<Dictionary<string, LogEntryBackupJob>>(json, _jsonOptions);
-            if (dict == null) return list;
+            if (!File.Exists(filePath)) {
+                return list;
+            }
+            var json = File.ReadAllText(filePath);
 
-            foreach (var keyValue in dict)
+            var entries = JsonSerializer.Deserialize<List<JobEntry>>(json, _jsonOptions);
+            if (entries == null) {
+                return list;
+            }
+
+            foreach (var entry in entries)
             {
-                var entry = keyValue.Value;
-                if (string.IsNullOrWhiteSpace(entry.Name)) entry.Name = keyValue.Key;
-                DateTime dateCreated = DateTime.Now;
-                if (!string.IsNullOrWhiteSpace(entry.DateCreated) && DateTime.TryParse(entry.DateCreated, out var parsed))
-                    dateCreated = parsed;
-
-                var job = new BackupJob(entry.Name, entry.SourceDir ?? "", entry.TargetDir ?? "", true, dateCreated);
-                list.AddJob(job);
+                DateTime dateCreated;
+                try 
+                { 
+                    dateCreated = DateTime.Parse(entry.DateCreated); 
+                }
+                catch 
+                { 
+                    dateCreated = DateTime.Now;
+                }
+                list.AddJob(new BackupJob(entry.Name, entry.SourceDir, entry.TargetDir, entry.Type, dateCreated));
             }
         }
-        catch { }
+        catch {}
         return list;
+    }
+
+    public void Save(string filePath)
+    {
+        var entries = new List<JobEntry>();
+
+        foreach (var job in jobs){
+            entries.Add(new JobEntry(job.Name, job.SourceDir, job.TargetDir, job.Type, job.DateCreated.ToString("O")));
+        }
+
+        File.WriteAllText(filePath, JsonSerializer.Serialize(entries, _jsonOptions));
     }
 }
