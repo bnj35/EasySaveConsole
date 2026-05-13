@@ -8,20 +8,17 @@ namespace EasySaveConsole;
 
 class Program
 {
-    [STAThread]
     static void Main(string[] args)
     {
         if (args.Length > 0)
         {
             Console.WriteLine("running");
             var settings = App.GetConfiguration();
-            string format = settings.DefaultFileFormat;
-            string statusPath = $"{settings.StatusFileSettings.FilePath}.{format}";
-
-            Joblist joblist = Joblist.LoadFromStatusFile(statusPath);
+            Joblist joblist = Joblist.Load(settings.JobsFilePath);
             MainViewModel viewModel = new MainViewModel(joblist, settings);
 
             var indices = ParseIndices(args[0]);
+            var tasks = new List<Task>();
 
             foreach (var idx in indices)
             {
@@ -32,24 +29,31 @@ class Program
                     Console.WriteLine($"No job at index {idx}");
                     continue;
                 }
-                try
-                {
-                    var active = viewModel.CreateActiveJob(job);
-                    Console.WriteLine($"Starting job: {active.Name}");
-                    viewModel.RunJob(active);//ça plante la dedans pour le moment
-                    Console.WriteLine($"Finished job: {active.Name}");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error running job {idx}: {ex.Message}");
-                }
+
+                var task = Task.Run(() =>
+                    {
+                        try
+                        {
+                            var active = viewModel.CreateActiveJob(job);
+                            Console.WriteLine($"Starting job: {active.Name}");
+                            viewModel.RunJob(active);//ça plante la dedans pour le moment
+                            Console.WriteLine($"Finished job: {active.Name}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error running job {idx}: {ex.Message}");
+                        }
+                    });
+
+                tasks.Add(task);
             }
+            Task.WaitAll(tasks.ToArray());
+            Console.WriteLine("All jobs completed");
             return;
         }
 
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
-
     static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>().UsePlatformDetect().LogToTrace();
 
     static List<int> ParseIndices(string input)

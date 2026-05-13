@@ -1,0 +1,12 @@
+services:
+  logserverapp:
+    build:
+      context: ..
+      dockerfile: LogServerApp/Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - logserverapp-logs:/app/logs
+
+volumes:
+  logserverapp-logs:

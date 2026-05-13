@@ -5,8 +5,10 @@
     "jobs": {
       "create": {
         "section": "Créer un nouveau travail",
-        "name.label": "Nom du travail :",
-        "name.placeholder": "Entrez le nom du travail",
+        "name":{
+          "label":"Nom du travail :",
+          "placeholder":"Entrez le nom du travail"
+        },
         "source.label": "Répertoire source :",
         "path.placeholder": "Chemin complet",
         "target.label": "Répertoire cible :",
@@ -21,9 +23,12 @@
         "section": "Travaux de sauvegarde",
         "run": "Exécuter la sélection",
         "delete": "Supprimer",
-        "running": "Travaux en cours :"
+        "running": "Travaux en cours :",
+        "pause": "Pause",
+        "resume": "Reprendre",
+        "stop": "Arrêter"
       },
-      "remaining.files": "Fichiers restants : {0}"
+      "remaining.files": "Restants : {0}"
     },
     "status": {
       "ready": "Prêt",
@@ -37,23 +42,31 @@
       "select.run": "Veuillez sélectionner un ou plusieurs travaux à exécuter",
       "select.delete": "Veuillez sélectionner un travail à supprimer",
       "error": "Erreur : {0}",
-      "error.run": "Erreur lors de l'exécution du travail '{0}' : {1}"
+      "error.run": "Erreur lors de l'exécution du travail '{0}' : {1}",
+      "job.stopped": "Travail '{0}' arrêté"
     }
   },
   "settings": {
     "title": "Paramètres",
     "language.label": "Langue :",
+    "transfer.size.label": "Taille d'un gros fichier (KB) :",
     "log.format.label": "Format des fichiers de log :",
+    "log.storage": {
+      "label": "Mode de stockage des logs :",
+      "local": "Local",
+      "remote": "Distant",
+      "both": "Local et distant"
+    },
     "log.dir.label": "Répertoire des logs :",
     "status.path.label": "Chemin du fichier de statut :",
     "encrypt.extensions.label": "Extensions à chiffrer (ex: .txt;.pdf) :",
     "save": "Enregistrer",
     "cancel": "Annuler",
-    "excludes":{
-      "processes":{
-        "label":"Processus exclus",
-        "placeholder":"ex: notepad, calc",
-        "exit":"Opération de copie stoppée : un processus exclus est en cours"
+    "excludes": {
+      "processes": {
+        "label": "Processus exclus",
+        "placeholder": "ex: notepad, calc",
+        "exit": "Opération de copie stoppée : un processus exclus est en cours"
       }
     }
   },
@@ -66,7 +79,8 @@
     "copyengine": {
       "arguments": {
         "null": "Le plan et le nom du job sont obligatoires."
-      }
+      },
+      "space":"pas assez de place dans le drive cible"
     },
     "copyplanner": {
       "source": {

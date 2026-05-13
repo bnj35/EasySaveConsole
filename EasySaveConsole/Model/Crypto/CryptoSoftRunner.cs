@@ -1,14 +1,27 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace EasySaveConsole
 {
     public static class CryptoSoftRunner
     {
+        private static readonly object _cryptoLock = new object();
+
         private static string ResolveCryptoSoftPath()
         {
-            string localPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CryptoSoft.exe");
+            string localPath;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                localPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CryptoSoft.exe");
+            }
+            else
+            {
+                localPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CryptoSoft.dll");
+            }
+
             if (File.Exists(localPath))
                 return localPath;
             DirectoryInfo? currentDir = new(AppDomain.CurrentDomain.BaseDirectory);
@@ -30,38 +43,64 @@ namespace EasySaveConsole
             string exePath = ResolveCryptoSoftPath();
 
             if (!File.Exists(exePath))
-                return -1;
-
-            Stopwatch sw = Stopwatch.StartNew();
-
-            ProcessStartInfo startInfo = new ProcessStartInfo
             {
-                FileName = exePath,
-                Arguments = $"\"{source}\" \"{destination}\" \"{key}\"",
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
+                return -1;
+            }
+
+            Stopwatch sw = new Stopwatch();
+
+            bool isDll = exePath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase);//pour mac
+            ProcessStartInfo startInfo;
+            if (isDll)
+            {
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = "dotnet",
+                    Arguments = $"\"{exePath}\" \"{source}\" \"{destination}\" \"{key}\"",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory
+                };
+            }
+            else
+            {
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = exePath,
+                    Arguments = $"\"{source}\" \"{destination}\" \"{key}\"",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory
+                };
+            }
 
             try
             {
-                using Process? process = Process.Start(startInfo);
-                if (process == null)
-                    return -2;
+                lock (_cryptoLock)
+                {
+                    sw.Restart();
+                    using Process? process = Process.Start(startInfo);
+                    if (process == null)
+                        return -2;
 
-                process.StandardError.ReadToEnd();
-                process.StandardOutput.ReadToEnd();
-                process.WaitForExit(60000);
-                sw.Stop();
+                    process.StandardError.ReadToEnd();
+                    process.StandardOutput.ReadToEnd();
+                    process.WaitForExit(60000);
+                    sw.Stop();
 
-                if (process.ExitCode != 0)
-                    return -Math.Abs(process.ExitCode);
+                    if (process.ExitCode != 0)
+                        return -Math.Abs(process.ExitCode);
 
-                return sw.Elapsed.TotalMilliseconds;
+                    return sw.Elapsed.TotalMilliseconds;
+                }
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"exeption {ex}");
                 return -3;
             }
         }

@@ -34,8 +34,8 @@ public sealed class MainViewModel
         BackupJob newjob = new BackupJob(name, source_dir, target_dir, type, DateTime.Now);
 
         _jobList.AddJob(newjob);
-
-        _statusLogger.UpdateInactiveJob(newjob, false);
+        _jobList.Save(Settings.JobsFilePath);
+        _statusLogger.Update(_jobList.GetAllJobs());
 
         return newjob;
     }
@@ -62,15 +62,19 @@ public sealed class MainViewModel
     }
     public void RunJob(ActiveJob active)
     {
-        void OnFileCopied(string source, string dest) => _statusLogger.UpdateActiveJob(active, source, dest);
+        void OnFileCopied()
+        {
+            _statusLogger.Update(_jobList.GetAllJobs(), active);
+        }
         active.FileCopied += OnFileCopied;
-        active.RunJob(_copyEngine);
+        active.RunJob(_copyEngine, Settings.PriorityExtensions);
         active.FileCopied -= OnFileCopied;
-        _statusLogger.UpdateInactiveJob(active, true);
+        _statusLogger.Update(_jobList.GetAllJobs());
     }
 
     public void DeleteJob(int index)
     {
-        BackupJob? deletedJob = _jobList.DeleteJob(index);
+        _jobList.DeleteJob(index);
+        _jobList.Save(Settings.JobsFilePath);
     }
 }

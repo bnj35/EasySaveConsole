@@ -13,7 +13,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
     }
-
+private ObservableCollection<ActiveJob> _activeJobs = new ObservableCollection<ActiveJob>();
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);
@@ -26,6 +26,7 @@ public partial class MainWindow : Window
         CreateJobButton.Click += CreateJobButton_Click;
         RunSelectedButton.Click += RunSelectedButton_Click;
         DeleteJobButton.Click += DeleteJobButton_Click;
+        ActiveJobsList.ItemsSource = _activeJobs;
 
         RefreshJobList();
     }
@@ -69,24 +70,25 @@ public partial class MainWindow : Window
 
         var selectedJobs = JobsList.SelectedItems?.OfType<BackupJob>().ToList() ?? [];
 
+
         if (selectedJobs.Count == 0)
         {
             UpdateStatus(LanguageService.T("main.status.select.run"));
             return;
         }
 
-        var activeJobs = new ObservableCollection<ActiveJob>();
-        ActiveJobsList.ItemsSource = activeJobs;
-
         UpdateStatus(selectedJobs.Count == 1
             ? string.Format(LanguageService.T("main.status.running.one"), selectedJobs[0].Name)
             : string.Format(LanguageService.T("main.status.running.multiple"), selectedJobs.Count));
 
-        Task.Run(() =>
+    Task.Run(async () =>
+    {
+        var tasks = new List<Task>();
+        bool allJobsSucceeded = true;
+        //une task par job
+        foreach (var job in selectedJobs)
         {
-            bool allJobsSucceeded = true;
-
-            foreach (var job in selectedJobs)
+            var task = Task.Run(() =>
             {
                 ActiveJob? activeJob = null;
 
@@ -96,33 +98,46 @@ public partial class MainWindow : Window
 
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        activeJobs.Add(activeJob);
+                        _activeJobs.Add(activeJob);
                     });
 
                     _viewModel.RunJob(activeJob);
 
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        activeJobs.Remove(activeJob);
+                        _activeJobs.Remove(activeJob);
+                    });
+                }
+                catch (OperationCanceledException)
+                {
+                    Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        if (activeJob != null)
+                            _activeJobs.Remove(activeJob);
+                        UpdateStatus(string.Format(LanguageService.T("main.status.job.stopped"), job.Name));
                     });
                 }
                 catch (Exception ex)
                 {
                     allJobsSucceeded = false;
-
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         if (activeJob != null)
-                            activeJobs.Remove(activeJob);
-
+                            _activeJobs.Remove(activeJob);
                         UpdateStatus(string.Format(LanguageService.T("main.status.error.run"), job.Name, ex.Message));
                     });
                 }
-            }
+            });
+
+            tasks.Add(task);
+        }
+
+        // attend que tout les jobs termine
+        await Task.WhenAll(tasks);
 
             if (allJobsSucceeded)
             {
-                Dispatcher.UIThread.InvokeAsync(() =>
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     UpdateStatus(LanguageService.T("main.status.completed"));
                     RefreshJobList();
@@ -130,7 +145,7 @@ public partial class MainWindow : Window
             }
             else
             {
-                Dispatcher.UIThread.InvokeAsync(() =>
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     RefreshJobList();
                 });
@@ -174,6 +189,30 @@ public partial class MainWindow : Window
             return;
 
         JobsList.ItemsSource = new ObservableCollection<BackupJob>(_viewModel.GetAllJobs());
+    }
+
+    private void PauseButton_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is ActiveJob job)
+        {
+            job.Pause();
+        }
+    }
+
+    private void ResumeButton_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is ActiveJob job)
+        {
+            job.Resume();
+        }
+    }
+
+    private void StopButton_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is ActiveJob job)
+        {
+            job.Stop();
+        }
     }
 
     private void UpdateStatus(string message) => StatusMessage.Text = message;

@@ -14,6 +14,7 @@ public class BackupJob : ObservableObject
     public DateTime DateCreated {get; set;}
     public DateTime? DateStart {get; set;}
     public DateTime? DateEnd {get; set;}
+    public DateTime LastActionTimestamp { get; set; }
 
     public BackupJob (string name, string source_dir, string target_dir, bool type, DateTime date_created)
     {
@@ -22,5 +23,6 @@ public class BackupJob : ObservableObject
         TargetDir = target_dir;
         Type = type;
         DateCreated = date_created;
+        LastActionTimestamp = date_created;
     }
 }

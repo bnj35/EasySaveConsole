@@ -1,7 +1,5 @@
-using System.ComponentModel;
-using System.IO.Enumeration;
 using System.Reflection.PortableExecutable;
-using System.Security.Cryptography.X509Certificates;
+
 
 namespace EasySaveConsole
 {
@@ -12,49 +10,16 @@ namespace EasySaveConsole
             string sourceRoot,
             string targetRoot,
             Action<int, string>? onItemScanned = null,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            string? priorityExtensions = null)
         {
             PathGuard.IsLooping(sourceRoot, targetRoot);
+
 
             string targetFull = Path.GetFullPath(targetRoot);
             string sourceFull = Path.GetFullPath(sourceRoot);
 
-            string? sourceDirectory = Path.GetDirectoryName(sourceFull);
-
-            if (File.Exists(sourceRoot))
-            {
-
-                if (string.IsNullOrWhiteSpace(sourceDirectory))
-                {
-                    throw new InvalidOperationException(LanguageService.T("error.copyplanner.source.parent"));
-                }
-
-                CopyPlan plan = new CopyPlan(sourceDirectory, targetFull);
-
-                var fileInfo = new FileInfo(sourceFull);
-
-                string relative = Path.GetFileName(sourceFull);
-
-                plan.Files.Add(new FileEntry(sourceFull, relative, fileInfo.Length, fileInfo.LastWriteTimeUtc));
-
-                plan.TotalBytes = (int)fileInfo.Length; // cast => transforme le long en int implicitement
-                plan.Validate();
-
-
-                return plan;
-            }
-
-            if (!Directory.Exists(sourceRoot))
-            {
-                throw new DirectoryNotFoundException(string.Format(LanguageService.T("error.path.notfound"), sourceRoot));
-            }
-
-            if (string.IsNullOrWhiteSpace(sourceDirectory))
-            {
-                throw new InvalidOperationException(LanguageService.T("error.copyplanner.source.parent"));
-            }
-
-            CopyPlan planDirectory = new CopyPlan(sourceDirectory, targetFull);
+            CopyPlan plan = new CopyPlan(sourceFull, targetFull);
 
             var parameters = new EnumerationOptions
             {
@@ -64,35 +29,63 @@ namespace EasySaveConsole
                 ReturnSpecialDirectories = false
             };
 
-            var directoryList = Directory.EnumerateDirectories(sourceFull, "*", parameters);
-            var fileList = Directory.EnumerateFiles(sourceFull, "*", parameters);
+            IEnumerable<string> list = Enumerable.Empty<string>();;
 
-            foreach (string dir in directoryList)
+            if (File.Exists(sourceFull))
+            {
+                list = list.Append(sourceFull);
+            }
+            else
+            {
+                list = Directory.EnumerateFileSystemEntries(sourceFull, "*", parameters);
+            }
+
+            foreach (string entry in list)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                string relative = Path.GetRelativePath(sourceFull, dir);
-                planDirectory.Directories.Add(new DirectoryEntry(dir, relative));
-                onItemScanned?.Invoke(planDirectory.Directories.Count + planDirectory.Files.Count, relative);
+                if (File.Exists(entry))
+                {
+                    var fileInfo = new FileInfo(entry);
+                    string relativeFile = Path.GetRelativePath(sourceFull, entry);
+                    plan.Files.Add(new FileEntry(entry, relativeFile, fileInfo.Length, fileInfo.LastWriteTimeUtc));
 
+                    plan.TotalBytes += (int)fileInfo.Length;
+                    onItemScanned?.Invoke(plan.Directories.Count + plan.Files.Count, relativeFile);
+                }
+                else
+                {
+                    string relativeDir = Path.GetRelativePath(sourceFull, entry);
+                    plan.Directories.Add(new DirectoryEntry(entry, relativeDir));
+                    onItemScanned?.Invoke(plan.Directories.Count + plan.Files.Count, relativeDir);
+                }
             }
 
-            foreach (string file in fileList)
+            if (!string.IsNullOrWhiteSpace(priorityExtensions))
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                var exts = priorityExtensions
+                    .Split(new[] { ';', ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(e => e.Trim().ToLowerInvariant())
+                    .ToArray();
 
-                var fileInfo = new FileInfo(file);
-
-                string relative = Path.GetRelativePath(sourceFull, file);
-                planDirectory.Files.Add(new FileEntry(file, relative, fileInfo.Length, fileInfo.LastWriteTimeUtc));
-
-                planDirectory.TotalBytes += (int)fileInfo.Length;
-                onItemScanned?.Invoke(planDirectory.Directories.Count + planDirectory.Files.Count, relative);
+                if (exts.Length > 0)
+                {
+                    var sortedFiles = plan.Files
+                        .OrderByDescending(f => 
+                        {
+                            string ext = Path.GetExtension(f.SourceFullPath).ToLowerInvariant();
+                            return exts.Any(e => ext == e || ext == "." + e);
+                        })
+                        .ToList();
+                    
+                    plan.Files.Clear();
+                    plan.Files.AddRange(sortedFiles);
+                }
             }
 
-            planDirectory.Validate();
+            plan.Validate();
 
-            return planDirectory;
+            return plan;
         }
     }
 }

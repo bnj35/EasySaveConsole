@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using EasyLog;
 using System.Text.Json;
 
 namespace EasySaveConsole;
@@ -23,10 +24,25 @@ public partial class SettingsWindow : Window
         _settings = settings;
         CurrentLanguage = currentLanguage;
 
+        switch (_settings.EasyLogSettings.LogStorage)
+        {
+            case LogStorageModes.Local:
+                LogStorageCombo.SelectedIndex = 0;
+                break;
+            case LogStorageModes.Remote:
+                LogStorageCombo.SelectedIndex = 1;
+                break;
+            case LogStorageModes.Both:
+                LogStorageCombo.SelectedIndex = 2;
+                break;
+        };
+
         LanguageCombo.SelectedIndex = CurrentLanguage == "fr" ? 1 : 0;
-        LogFormatCombo.SelectedIndex = _settings.DefaultFileFormat == "xml" ? 1 : 0;
+        LogFormatCombo.SelectedIndex = _settings.LogFileFormat == LogFileFormats.xml ? 1 : 0;
         ExcludeProcessesInput.Text = _settings.ProcessExclusionSettings.ExcludedProcesses;
         EncryptExtensionsInput.Text = _settings.EncryptExtensions;
+        PriorityExtensionsInput.Text = _settings.PriorityExtensions;
+        BigFileSizeInput.Value = _settings.BigFileSize <= 0 ? 10 : _settings.BigFileSize;
 
         SaveButton.Click += SaveButton_Click;
         CancelButton.Click += (_, _) => Close(false);
@@ -41,9 +57,24 @@ public partial class SettingsWindow : Window
             CurrentLanguage = newLang;
         }
 
-        _settings.DefaultFileFormat = LogFormatCombo.SelectedIndex == 1 ? "xml" : "json";
+        switch (LogStorageCombo.SelectedIndex)
+        {
+            case 0:
+                _settings.EasyLogSettings.LogStorage = LogStorageModes.Local;
+                break;
+            case 1:
+                _settings.EasyLogSettings.LogStorage = LogStorageModes.Remote;
+                break;
+            case 2:
+                _settings.EasyLogSettings.LogStorage = LogStorageModes.Both;
+                break;
+        };
+
+        _settings.LogFileFormat = LogFormatCombo.SelectedIndex == 1 ? LogFileFormats.xml : LogFileFormats.json;
         _settings.ProcessExclusionSettings.ExcludedProcesses = ExcludeProcessesInput.Text ?? "";
         _settings.EncryptExtensions = EncryptExtensionsInput.Text ?? "";
+        _settings.PriorityExtensions = PriorityExtensionsInput.Text ?? "";
+        _settings.BigFileSize = (int)(BigFileSizeInput.Value ?? 10);
 
 
         PersistSettings();
@@ -54,12 +85,14 @@ public partial class SettingsWindow : Window
     {
         var data = new
         {
-            defaultFileFormat = _settings.DefaultFileFormat,
+            defaultFileFormat = _settings.LogFileFormat,
             dateFormat = _settings.DateFormat,
             statusFileSettings = new { filePath = _settings.StatusFileSettings.FilePath },
-            easyLogSettings = new { directoryPath = _settings.EasyLogSettings.DirectoryPath },                
+            easyLogSettings = new { directoryPath = _settings.EasyLogSettings.DirectoryPath, logStorage = _settings.EasyLogSettings.LogStorage },
             processExclusionSettings = new { excludedProcesses = _settings.ProcessExclusionSettings.ExcludedProcesses },
-            encryptExtensions = _settings.EncryptExtensions
+            encryptExtensions = _settings.EncryptExtensions,
+            priorityExtensions = _settings.PriorityExtensions,
+            bigFileSize = _settings.BigFileSize
         };
         File.WriteAllText("./appsettings.json", JsonSerializer.Serialize(data, _jsonOptions));
     }

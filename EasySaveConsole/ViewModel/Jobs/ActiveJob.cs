@@ -99,11 +99,35 @@ public class ActiveJob : BackupJob
         private set => SetProperty(ref _planningItemsScanned, value);
     }
 
-    public List<string>? AddressesOfFiles { get; set; }
+    public List<string> AddressesOfFiles { get; set; }
 
-    public List<string>? DestinationOfFiles { get; set; }
+    public List<string> DestinationOfFiles { get; set; }
 
-    public event Action<string, string>? FileCopied;
+    public event Action? FileCopied;
+
+    public CancellationTokenSource Cts { get; } = new();
+    public ManualResetEventSlim PauseEvent { get; } = new (true);
+
+    private bool _isPaused;
+    public bool IsPaused
+    {
+        get => _isPaused;
+        private set => SetProperty(ref _isPaused, value);
+    }
+
+    public void Pause()
+    {
+        PauseEvent.Reset();
+        IsPaused = true;
+    }
+
+    public void Resume()
+    {
+        PauseEvent.Set();
+        IsPaused = false;
+    }
+
+    public void Stop() => Cts.Cancel();
 
 
     public ActiveJob(string name, string source_dir, string target_dir, bool type, DateTime date) : base(name, source_dir, target_dir, type, date)
@@ -120,7 +144,7 @@ public class ActiveJob : BackupJob
         PlanningItemsScanned = 0;
     }
 
-    public void RunJob(CopyEngine engine)
+    public void RunJob(CopyEngine engine, string? priorityExtensions = null)
     {
         PathGuard.IsLooping(SourceDir, TargetDir);
         IsPlanning = true;
@@ -133,10 +157,12 @@ public class ActiveJob : BackupJob
             (itemsScanned, currentPath) =>
             {
                 PlanningItemsScanned = itemsScanned;
-            }
+                PhaseMessage = string.Format(LanguageService.T("run.phase.planning"), itemsScanned, Path.GetFileName(currentPath)); // pour dire à l'user que on prepare
+            },
+            Cts.Token,
+            priorityExtensions
         );
-        // pas de blocage
-
+        
         IsPlanning = false;
         PhaseMessage = LanguageService.T("run.phase.copying");
 
@@ -152,7 +178,6 @@ public class ActiveJob : BackupJob
             OnProgressPercent: percent =>
             {
                 Progression = percent;
-                Console.WriteLine($"{percent}");// temp a enlever
             },
             OnRemainingChanged: (filesRemaining, bytesRemaining) =>
             {
@@ -161,18 +186,21 @@ public class ActiveJob : BackupJob
             },
             OnFileCopied: (file, destinationPath, transferMs, encryptMs) =>
             {
-                AddressesOfFiles?.Add(file.SourceFullPath);
-                DestinationOfFiles?.Add(destinationPath);
+                AddressesOfFiles.Add(file.SourceFullPath);
+                DestinationOfFiles.Add(destinationPath);
 
                 LastFileCopied = Path.GetFileName(destinationPath);
                 LastCopiedBytes = (int)file.LengthBytes;
                 LastTransferMs = transferMs;
                 LastEncryptionMs = encryptMs;
+                LastActionTimestamp = DateTime.Now;
 
-                FileCopied?.Invoke(file.SourceFullPath, destinationPath);
-            }
+                FileCopied?.Invoke();
+            },
+            pauseEvent: PauseEvent,
+            cancellationToken: Cts.Token
         );
-
+        LastActionTimestamp = DateTime.Now;
         PhaseMessage = LanguageService.T("run.phase.completed");
         Console.WriteLine();
         float totalCopied = plan.TotalBytes - SizeFileRemaining;

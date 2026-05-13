@@ -21,9 +21,12 @@
         "section": "Backup Jobs",
         "run": "Run Selected",
         "delete": "Delete",
-        "running": "Running Jobs:"
+        "running": "Running Jobs:",
+        "pause": "Pause",
+        "resume": "Resume",
+        "stop": "Stop"
       },
-      "remaining.files": "Remaining files: {0}"
+      "remaining.files": "Remaining: {0}"
     },
     "status": {
       "ready": "Ready",
@@ -37,13 +40,21 @@
       "select.run": "Please select one or more jobs to run",
       "select.delete": "Please select a job to delete",
       "error": "Error: {0}",
-      "error.run": "Error running job '{0}': {1}"
+      "error.run": "Error running job '{0}': {1}",
+      "job.stopped": "Job '{0}' stopped"
     }
   },
   "settings": {
     "title": "Settings",
+    "transfer.size.label": "Large file size (KB):",
     "language.label": "Language:",
     "log.format.label": "Log File Format:",
+    "log.storage": {
+      "label": "Logs storage mode:",
+      "local": "Local",
+      "remote": "Remote",
+      "both": "Local and remote"
+    },
     "log.dir.label": "Log Directory:",
     "status.path.label": "Status File Path:",
     "encrypt.extensions.label": "Extensions to encrypt (e.g., .txt;.pdf):",
@@ -66,7 +77,8 @@
     "copyengine": {
       "arguments": {
         "null": "Plan and job name are required."
-      }
+      },
+      "space":"not enough space in the target drive"
     },
     "copyplanner": {
       "source": {

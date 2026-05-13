@@ -5,12 +5,17 @@ namespace EasySaveConsole
 {
     public sealed class CopyEngine
     {
-        private readonly EasyLogger _logger;
+        private readonly Logger _logger;
         private readonly Settings _settings;
+        private static readonly object _lockSync = new object(); // lock pour éviter les conflits d'accès
+        private static readonly Dictionary<string, ReaderWriterLockSlim> _pathLocks = new();
+        private static readonly SemaphoreSlim _bigFileSemaphore = new SemaphoreSlim(2);
+        private long BigFileThresholdBytes => (long)Math.Max(1, _settings.BigFileSize) * 1024 * 1024;
+
 
         public CopyEngine(Settings settings)
         {
-            _logger = EasyLogger.GetInstance(settings.EasyLogSettings.DirectoryPath, settings.DateFormat, settings.DefaultFileFormat);
+            _logger = new Logger(settings);
             _settings = settings;
         }
 
@@ -21,83 +26,150 @@ namespace EasySaveConsole
             Action<double>? OnProgressPercent = null,
             Action<int, int>? OnRemainingChanged = null,
             Action<FileEntry, string, double, double>? OnFileCopied = null,
+            ManualResetEventSlim? pauseEvent = null,
             CancellationToken cancellationToken = default
         )
         {
+
             if (plan == null || jobName == null)
             {
                 throw new ArgumentNullException(nameof(plan), LanguageService.T("error.copyengine.arguments.null"));
             }
+
+            if (IsUnixPath(plan.TargetRoot))
+            {
+
+                DriveInfo drive = new DriveInfo(plan.TargetRoot);
+
+                long freeSpace = drive.AvailableFreeSpace;
+                long requiredSpace = plan.TotalBytes;
+
+                if (freeSpace < requiredSpace)
+                {
+                    throw new InvalidOperationException(LanguageService.T("error.copyengine.space"));
+                }
+            }
+            var test = Directory.CreateDirectory(plan.TargetRoot);
             Directory.CreateDirectory(plan.TargetRoot);
 
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             string[] excludedProcesses = GetExcludedProcesses();
+            using var processPauseEvent = new ManualResetEventSlim(true);
+            using var monitorStopCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             Task? processMonitorTask = excludedProcesses.Length == 0
                 ? null
-                : CheckProcess(excludedProcesses, linkedCts);
+                : MonitorProcesses(excludedProcesses, processPauseEvent, monitorStopCts.Token);
 
             string[] encryptExtensions = GetEncryptExtensions();
 
             var createdDirectories = new HashSet<string>(GetPathComparer());
             try
             {
-                foreach (DirectoryEntry dir in plan.Directories)
-                {
-                    linkedCts.Token.ThrowIfCancellationRequested();
-
-                    string destDir = Path.Combine(plan.TargetRoot, dir.RelativePath);
-
-                    if (createdDirectories.Add(destDir) && !Directory.Exists(destDir))
-                    {
-                        Directory.CreateDirectory(destDir);
-                        _logger.LogDirectoryCreation(jobName, destDir);
-                    }
-                }
-
-
                 int remainingBytes = plan.TotalBytes;
                 int remainingFiles = plan.TotalFiles;
 
-                foreach (FileEntry file in plan.Files)
+                foreach (var ent in plan)
                 {
-                    linkedCts.Token.ThrowIfCancellationRequested();
+                    pauseEvent?.Wait(cancellationToken);
+                    processPauseEvent.Wait(cancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                    string destFile = Path.Combine(plan.TargetRoot, file.RelativePath);
-                    string? destDir = Path.GetDirectoryName(destFile);
-
-                    if (!string.IsNullOrEmpty(destDir) && createdDirectories.Add(destDir) && !Directory.Exists(destDir))
+                    if (ent is DirectoryEntry dir)
                     {
-                        Directory.CreateDirectory(destDir);
-                        _logger.LogDirectoryCreation(jobName, destDir);
+                        string destDir = Path.Combine(plan.TargetRoot, dir.RelativePath);
+                        var pathLock = GetPathLock(destDir);
+
+                        pathLock.EnterWriteLock();
+                        try
+                        {
+                            if (createdDirectories.Add(destDir) && !Directory.Exists(destDir))
+                            {
+                                Directory.CreateDirectory(destDir);
+                                _logger.LogDirectoryCreation(jobName, destDir);
+                            }
+                            remainingFiles--;
+                            OnRemainingChanged?.Invoke(remainingFiles, remainingBytes);
+                        }
+                        finally
+                        {
+                            pathLock.ExitWriteLock();
+                        }
                     }
-
-                    bool shouldEncrypt = IsExtensionToEncrypt(file.SourceFullPath, encryptExtensions);
-                    var (transferMs, encryptMs) = CopyFileWithTiming(file.SourceFullPath, destFile, type, shouldEncrypt);
-
-                    remainingBytes -= (int)file.LengthBytes;
-                    remainingFiles--;
-
-                    OnRemainingChanged?.Invoke(remainingFiles, remainingBytes);
-
-                    if (plan.TotalBytes > 0)
+                    else if (ent is FileEntry file)
                     {
-                        double done = (double)(plan.TotalBytes - remainingBytes) / plan.TotalBytes;
-                        OnProgressPercent?.Invoke(done * 100.0);
+                        string destFile = Path.Combine(plan.TargetRoot, file.RelativePath);
+                        string? destDir = Path.GetDirectoryName(destFile);
+
+                        // Lock du répertoire
+                        if (!string.IsNullOrEmpty(destDir))
+                        {
+                            var dirLock = GetPathLock(destDir);
+                            dirLock.EnterWriteLock();
+                            try
+                            {
+                                if (createdDirectories.Add(destDir) && !Directory.Exists(destDir))
+                                {
+                                    Directory.CreateDirectory(destDir);
+                                    _logger.LogDirectoryCreation(jobName, destDir);
+                                }
+                            }
+                            finally
+                            {
+                                dirLock.ExitWriteLock();
+                            }
+                        }
+
+                        // Lock du fichier
+                        var fileLock = GetPathLock(destFile);
+                        fileLock.EnterWriteLock();
+                        try
+                        {
+                            bool shouldEncrypt = IsExtensionToEncrypt(file.SourceFullPath, encryptExtensions);
+                            bool isBigFile = file.LengthBytes >= BigFileThresholdBytes;
+
+                            if (isBigFile)
+                            {
+                                // pour SemaphoreSlim : _bigFileSemaphore.Wait(linkedCts.Token);
+                                // pour Semaphore : _bigFileSemaphore.WaitOne();
+                                _bigFileSemaphore.Wait(cancellationToken);
+
+                            }
+
+                            try
+                            {
+                                var (transferMs, encryptMs) = CopyFileWithTiming(file.SourceFullPath, destFile, type, shouldEncrypt);
+
+                                remainingBytes -= (int)file.LengthBytes;
+                                remainingFiles--;
+
+                                OnRemainingChanged?.Invoke(remainingFiles, remainingBytes);
+
+                                if (plan.TotalBytes > 0)
+                                {
+                                    double done = (double)(plan.TotalBytes - remainingBytes) / plan.TotalBytes;
+                                    OnProgressPercent?.Invoke(done * 100.0);
+                                }
+
+                                _logger.LogFileCopy(jobName, file.SourceFullPath, destFile, file.LengthBytes, transferMs, encryptMs);
+                                OnFileCopied?.Invoke(file, destFile, transferMs, encryptMs);
+                            }
+                            finally
+                            {
+                                if (isBigFile)
+                                {
+                                    _bigFileSemaphore.Release();
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            fileLock.ExitWriteLock();
+                        }
                     }
-
-                    _logger.LogFileCopy(jobName, file.SourceFullPath, destFile, file.LengthBytes, transferMs, encryptMs);
-
-                    OnFileCopied?.Invoke(file, destFile, transferMs, encryptMs);
                 }
-
-            }
-            catch (OperationCanceledException) when (linkedCts.IsCancellationRequested)
-            {
-                throw new OperationCanceledException(LanguageService.T("settings.excludes.processes.exit"), linkedCts.Token);
             }
             finally
             {
-                linkedCts.Cancel();
+                monitorStopCts.Cancel();
 
                 if (processMonitorTask != null)
                 {
@@ -166,6 +238,20 @@ namespace EasySaveConsole
             return (elapsedTime, encryptTime);
         }
 
+        private static ReaderWriterLockSlim GetPathLock(string path)
+        {
+            lock (_lockSync)
+            {
+                string normalized = Path.GetFullPath(path).ToLowerInvariant();
+                if (!_pathLocks.TryGetValue(normalized, out var lockObj))
+                {
+                    lockObj = new ReaderWriterLockSlim();
+                    _pathLocks[normalized] = lockObj;
+                }
+                return lockObj;
+            }
+        }
+
         public static IEqualityComparer<string> GetPathComparer()
         {
             var comparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
@@ -178,8 +264,8 @@ namespace EasySaveConsole
             if (!string.IsNullOrWhiteSpace(exts))
             {
                 return exts.Split(new[] { ';', ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                           .Select(e => e.Trim().ToLowerInvariant())
-                           .ToArray();
+                            .Select(e => e.Trim().ToLowerInvariant())
+                            .ToArray();
             }
             return Array.Empty<string>();
         }
@@ -187,9 +273,9 @@ namespace EasySaveConsole
         private static bool IsExtensionToEncrypt(string filePath, string[] encryptExtensions)
         {
             if (encryptExtensions.Length == 0) return false;
-            
+
             string extension = Path.GetExtension(filePath).ToLowerInvariant();
-            
+
             // Tolère si l'utilisateur a écrit "txt" sans le point "."
             return encryptExtensions.Any(ext => extension == ext || extension == "." + ext);
         }
@@ -211,16 +297,19 @@ namespace EasySaveConsole
                 .ToArray();
         }
 
-        private static async Task CheckProcess(string[] excludedProcesses, CancellationTokenSource cancellationSource)
+        private static async Task MonitorProcesses(string[] excludedProcesses, ManualResetEventSlim processPauseEvent, CancellationToken cancellationToken)
         {
             using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(500));
 
-            while (!cancellationSource.IsCancellationRequested && await timer.WaitForNextTickAsync(cancellationSource.Token).ConfigureAwait(false))
+            while (await timer.WaitForNextTickAsync(cancellationToken).ConfigureAwait(false))
             {
                 if (IsExcludedProcessRunning(excludedProcesses))
                 {
-                    cancellationSource.Cancel();
-                    return;
+                    processPauseEvent.Reset();
+                }
+                else
+                {
+                    processPauseEvent.Set();
                 }
             }
         }
@@ -245,8 +334,9 @@ namespace EasySaveConsole
                         return true;
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Console.WriteLine($"{ex}");
                 }
                 finally
                 {
@@ -255,6 +345,31 @@ namespace EasySaveConsole
             }
 
             return false;
+        }
+
+        private static bool IsUnixPath(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return false;
+
+            // Chemin Unix/Linux/macOS commence par /
+            if (path.StartsWith("/"))
+            {
+                if (path.StartsWith("/Volumes"))
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            // Chemin Windows: C:\ ou \\server\share
+            if (path.Length >= 2 && char.IsLetter(path[0]) && path[1] == ':')
+                return true;
+
+            if (path.StartsWith("\\\\"))
+                return true;
+
+            // Par défaut Unix si pas de caractéristiques Windows
+            return !path.Contains("\\");
         }
     }
 }
