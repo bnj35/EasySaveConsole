@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-
-namespace EasySaveConsole;
+﻿namespace EasySaveConsole;
 
 public sealed class LogEntryActiveJob : LogEntryBackupJob
 {
@@ -12,8 +7,8 @@ public sealed class LogEntryActiveJob : LogEntryBackupJob
     public double ProgressPercent { get; set; }
     public int FilesRemaining { get; set; }
     public float BytesRemaining { get; set; }
-    public string CurrentSourceFile { get; set; }
-    public string CurrentDestFile { get; set; }
+    public string? CurrentSourceFile { get; set; }
+    public string? CurrentDestFile { get; set; }
 
     public LogEntryActiveJob() { }
 

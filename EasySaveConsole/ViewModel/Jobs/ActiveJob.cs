@@ -99,9 +99,9 @@ public class ActiveJob : BackupJob
         private set => SetProperty(ref _planningItemsScanned, value);
     }
 
-    public List<string>? AddressesOfFiles { get; set; }
+    public List<string> AddressesOfFiles { get; set; }
 
-    public List<string>? DestinationOfFiles { get; set; }
+    public List<string> DestinationOfFiles { get; set; }
 
     public event Action? FileCopied;
 
@@ -186,8 +186,8 @@ public class ActiveJob : BackupJob
             },
             OnFileCopied: (file, destinationPath, transferMs, encryptMs) =>
             {
-                AddressesOfFiles?.Add(file.SourceFullPath);
-                DestinationOfFiles?.Add(destinationPath);
+                AddressesOfFiles.Add(file.SourceFullPath);
+                DestinationOfFiles.Add(destinationPath);
 
                 LastFileCopied = Path.GetFileName(destinationPath);
                 LastCopiedBytes = (int)file.LengthBytes;
