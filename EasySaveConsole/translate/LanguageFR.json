@@ -28,7 +28,7 @@
         "resume": "Reprendre",
         "stop": "Arrêter"
       },
-      "remaining.files": "Fichiers restants : {0}"
+      "remaining.files": "Restants : {0}"
     },
     "status": {
       "ready": "Prêt",

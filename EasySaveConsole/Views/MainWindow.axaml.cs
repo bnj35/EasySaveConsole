@@ -13,7 +13,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
     }
-
+private ObservableCollection<ActiveJob> _activeJobs = new ObservableCollection<ActiveJob>();
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);
@@ -26,6 +26,7 @@ public partial class MainWindow : Window
         CreateJobButton.Click += CreateJobButton_Click;
         RunSelectedButton.Click += RunSelectedButton_Click;
         DeleteJobButton.Click += DeleteJobButton_Click;
+        ActiveJobsList.ItemsSource = _activeJobs;
 
         RefreshJobList();
     }
@@ -76,9 +77,6 @@ public partial class MainWindow : Window
             return;
         }
 
-        var activeJobs = new ObservableCollection<ActiveJob>();
-        ActiveJobsList.ItemsSource = activeJobs;
-
         UpdateStatus(selectedJobs.Count == 1
             ? string.Format(LanguageService.T("main.status.running.one"), selectedJobs[0].Name)
             : string.Format(LanguageService.T("main.status.running.multiple"), selectedJobs.Count));
@@ -100,14 +98,14 @@ public partial class MainWindow : Window
 
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        activeJobs.Add(activeJob);
+                        _activeJobs.Add(activeJob);
                     });
 
                     _viewModel.RunJob(activeJob);
 
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        activeJobs.Remove(activeJob);
+                        _activeJobs.Remove(activeJob);
                     });
                 }
                 catch (OperationCanceledException)
@@ -115,7 +113,7 @@ public partial class MainWindow : Window
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         if (activeJob != null)
-                            activeJobs.Remove(activeJob);
+                            _activeJobs.Remove(activeJob);
                         UpdateStatus(string.Format(LanguageService.T("main.status.job.stopped"), job.Name));
                     });
                 }
@@ -125,7 +123,7 @@ public partial class MainWindow : Window
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         if (activeJob != null)
-                            activeJobs.Remove(activeJob);
+                            _activeJobs.Remove(activeJob);
                         UpdateStatus(string.Format(LanguageService.T("main.status.error.run"), job.Name, ex.Message));
                     });
                 }

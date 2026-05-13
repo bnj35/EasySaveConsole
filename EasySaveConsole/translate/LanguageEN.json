@@ -26,7 +26,7 @@
         "resume": "Resume",
         "stop": "Stop"
       },
-      "remaining.files": "Remaining files: {0}"
+      "remaining.files": "Remaining: {0}"
     },
     "status": {
       "ready": "Ready",
