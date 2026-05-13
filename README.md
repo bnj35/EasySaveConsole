@@ -1,11 +1,11 @@
 # EasySave - Technical Note
 
 ## Version
-V2.0.0
+V3.0.0
 
 
 ## Overview
-EasySave is a C# .NET 10 application for managing and executing directory backup jobs. It is engineered with a strict **MVVM (Model-View-ViewModel)** architectural pattern to ensure a clean separation of concerns, high performance for file operations, and a flexible, multilingual user interface built with **Avalonia**.
+EasySave is a C# .NET 10 application for managing and executing parallel directory backup jobs. It is engineered with a strict **MVVM (Model-View-ViewModel)** architectural pattern to ensure a clean separation of concerns, high performance for concurrent file operations, and a flexible, multilingual user interface built with **Avalonia**.
 
 
 ## Architecture (MVVM)
@@ -24,8 +24,8 @@ The codebase is strictly organized to separate concerns:
    - **Components**:
      - `JobList`: Manages the collection of `BackupJob` instances.
      - `BackupJob`: A data object representing the static configuration of a backup (Name, Source, Target, Type, Encrypt flag).
-     - `ActiveJob`: Represents a running backup execution. Extends `BackupJob` with live progress properties (`Progression`, `NumberFilesRemaining`, etc.) and raises `PropertyChanged` events consumed by the View.
-     - `CopyEngine`: Executes the copy plan, enforces process exclusion, and delegates encryption to `CryptoSoftRunner`.
+     - `ActiveJob`: Represents a running backup execution. Extends `BackupJob` with live progress properties (`Progression`, `NumberFilesRemaining`, etc.) and raises `PropertyChanged` events consumed by the View. It does not contain an `Encrypt` flag, as encryption is a global setting based on file extensions.
+     - `CopyEngine`: Executes the copy plan. It manages concurrent operations using path-level locks (`ReaderWriterLockSlim`) to prevent race conditions and uses a `SemaphoreSlim` to limit bandwidth on large files. It also enforces process exclusion and delegates encryption to `CryptoSoftRunner`.
      - `CopyPlanner`: Scans the source directory and builds a `CopyPlan` (file list, total size) before execution starts.
 
 **Strict Separation Rules:**
@@ -35,21 +35,23 @@ The codebase is strictly organized to separate concerns:
 
 
 ## Key Components
-- **CopyEngine**: Designed for high performance and low memory footprint. Uses `FileStream` with `FileOptions.SequentialScan` for large file transfers. Implements an event-driven approach (via `Action` delegates) to report progress, remaining files, and bytes in real-time. Checks for excluded business processes before copying each file, and pauses execution if one is detected.
-- **CryptoSoftRunner**: Runs the external CryptoSoft executable for the file encryption. Triggered by file when the job's `Encrypt` flag is set and the file extension matches the configured list.
-- **LanguageService**: A dynamic, dictionary-based translation system. Loads flattened JSON files (`LanguageEN.json`, `LanguageFR.json`). Emit an event on language switch, which causes all Avalonia bindings bound to `LanguageService.Instance` to update without any manual refresh.
+- **Parallel Execution**: Multiple backup jobs can run simultaneously via an asynchronous `Task` system, drastically improving performance on multiple targets.
+- **CopyEngine**: Designed for high performance and stability. Uses `FileStream` with `FileOptions.SequentialScan` for large file transfers. It enforces bandwidth limitations by utilizing a `SemaphoreSlim` to limit concurrent large file transfers. Note that while large files are being transferred, smaller files can still be transferred simultaneously by other jobs. Crucially, it uses a `ReaderWriterLockSlim` on each file and directory path to ensure thread-safe write operations during parallel job execution.
+- **Priority File Management**: A strict priority rule is applied across all active jobs: no backup of a non-priority file can be performed as long as there are user-defined priority extensions pending on at least one job. The `CopyPlanner` sorts files across the execution queue to enforce this.
+- **Interactive Job Control**: Active jobs can be paused, resumed, and stopped mid-execution via `ManualResetEventSlim` and `CancellationTokenSource`. 
+- **CryptoSoftRunner**: Runs the single-instance CryptoSoft executable for file encryption. Concurrency is strictly managed to ensure only one instance runs at a time.
 
 ## Logging & State Management
-The application features two distinct logging mechanisms:
+The application features comprehensive logging mechanisms:
 
-1. **Execution Logging (EasyLog)**: Records every file transfer with source path, destination path, file size, and transfer duration. A new file is created each day. Supports both **JSON** and **XML** formats.
-
-2. **State Logging**: A single file (JSON or XML) tracks the current state of each job (progress, files remaining, status). Updated in real-time during execution.
+1. **Execution Logging (EasyLog)**: Records every file transfer. Supports both **JSON** and **XML** formats.
+   - **Docker Centralization**: Logs can be saved locally, sent to a centralized Docker server (single daily log for all users), or both, depending on settings.
+2. **State Logging**: A single real-time file (JSON or XML) tracks the progress, files remaining, and status of every job.
 
 
 ## Security & Business Software Blocking
-- **Encryption**: Jobs can be configured to encrypt files on copy using CryptoSoft. The encrypted extensions are configurable in Settings (e.g., `.txt;.pdf`).
-- **Process Exclusion**: A list of business software process names can be configured in Settings. Before copying each file, `CopyEngine` checks if any of these processes are running. If one is detected, the copy is blocked until the process exits.
+- **Encryption**: Files matching configurable extensions are encrypted on the fly via the single-instance CryptoSoft software.
+- **Dynamic Process Exclusion**: A list of business software processes can be configured. If a listed process is launched during backup, all running jobs are immediately paused. Once the software is closed, backups resume automatically.
 
 
 ## Coding Conventions
@@ -89,7 +91,11 @@ Any new string must be added to both translation files using a flat JSON syntax:
 - **Test 5:** Run a job with encryption enabled.
     Expected result: Files at destination are encrypted by CryptoSoft (Status: OK).
 - **Test 6:** Run a job while an excluded business process is running.
-    Expected result: Execution is blocked until the process is closed (Status: OK).
+    Expected result: Running jobs pause in real-time and resume automatically when the software is closed (Status: OK).
+- **Test 7:** Transfer 3 large files simultaneously.
+    Expected result: Only 1 large file transfers at a time to prevent bandwidth saturation (Status: OK).
+- **Test 8:** Run multiple jobs simultaneously.
+    Expected result: Progress bars for all active jobs update concurrently in the UI (Status: OK).
 
 
 ## Prerequisites
@@ -128,16 +134,18 @@ Fill in the form on the left panel:
 Click **Create Job** to add it to the list.
 
 ### Running Jobs
-Select one or more jobs in the list, then click **Run Selected**. Active jobs appear in the progress panel at the bottom with a live progress bar and remaining file count.
+Select one or more jobs in the list, then click **Run Selected**. Jobs will execute in parallel.
+Active jobs appear in the progress panel where you can visually track the progress, **Pause**, **Resume**, or **Stop** each job at any time.
 
 ### Deleting a Job
 Select a job in the list and click **Delete Job**.
 
 ### Settings
 Click the **Settings** button (top right) to configure:
-- **Log format**: JSON or XML for execution logs.
-- **Log directory**: Where daily log files are stored.
+- **Log Storage Mode**: Choose Local, Remote (Docker Centralization), or Both.
+- **Log Format & Directory**: JSON or XML, and where to store them locally.
 - **Status file path**: Location of the real-time state file.
+- **Large file size (KB)**: Threshold above which files are queued to avoid network saturation.
 - **Encrypted extensions**: Semicolon-separated list of extensions to encrypt (e.g., `.txt;.pdf`).
 - **Excluded processes**: Semicolon-separated list of business software process names that block job execution when running (e.g., `notepad;calc`).
 - **Language**: Switch between English and French. The interface updates immediately.
