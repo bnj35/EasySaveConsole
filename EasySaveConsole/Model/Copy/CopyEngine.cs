@@ -30,12 +30,13 @@ namespace EasySaveConsole
             CancellationToken cancellationToken = default
         )
         {
+
             if (plan == null || jobName == null)
             {
                 throw new ArgumentNullException(nameof(plan), LanguageService.T("error.copyengine.arguments.null"));
             }
 
-            if (IsUnixPath(plan.TargetRoot))
+            if (OperatingSystem.IsWindows())
             {
 
                 DriveInfo drive = new DriveInfo(plan.TargetRoot);
@@ -48,6 +49,7 @@ namespace EasySaveConsole
                     throw new InvalidOperationException(LanguageService.T("error.copyengine.space"));
                 }
             }
+            var test = Directory.CreateDirectory(plan.TargetRoot);
             Directory.CreateDirectory(plan.TargetRoot);
 
             string[] excludedProcesses = GetExcludedProcesses();
