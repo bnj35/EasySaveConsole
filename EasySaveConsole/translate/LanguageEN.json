@@ -77,7 +77,8 @@
     "copyengine": {
       "arguments": {
         "null": "Plan and job name are required."
-      }
+      },
+      "space":"not enough space in the target drive"
     },
     "copyplanner": {
       "source": {

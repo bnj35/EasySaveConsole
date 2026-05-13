@@ -35,7 +35,7 @@ namespace EasySaveConsole
                 throw new ArgumentNullException(nameof(plan), LanguageService.T("error.copyengine.arguments.null"));
             }
 
-            if (OperatingSystem.IsWindows())
+            if (IsUnixPath(plan.TargetRoot))
             {
 
                 DriveInfo drive = new DriveInfo(plan.TargetRoot);
@@ -45,7 +45,7 @@ namespace EasySaveConsole
 
                 if (freeSpace < requiredSpace)
                 {
-                    throw new InvalidOperationException();
+                    throw new InvalidOperationException(LanguageService.T("error.copyengine.space"));
                 }
             }
             Directory.CreateDirectory(plan.TargetRoot);
@@ -343,6 +343,25 @@ namespace EasySaveConsole
             }
 
             return false;
+        }
+
+        private static bool IsUnixPath(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return false;
+
+            // Chemin Unix/Linux/macOS commence par /
+            if (path.StartsWith("/"))
+                return true;
+
+            // Chemin Windows: C:\ ou \\server\share
+            if (path.Length >= 2 && char.IsLetter(path[0]) && path[1] == ':')
+                return false;
+
+            if (path.StartsWith("\\\\"))
+                return false;
+
+            // Par défaut Unix si pas de caractéristiques Windows
+            return !path.Contains("\\");
         }
     }
 }
