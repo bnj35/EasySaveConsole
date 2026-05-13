@@ -30,6 +30,7 @@ namespace EasySaveConsole
             CancellationToken cancellationToken = default
         )
         {
+
             if (plan == null || jobName == null)
             {
                 throw new ArgumentNullException(nameof(plan), LanguageService.T("error.copyengine.arguments.null"));
@@ -48,6 +49,7 @@ namespace EasySaveConsole
                     throw new InvalidOperationException(LanguageService.T("error.copyengine.space"));
                 }
             }
+            var test = Directory.CreateDirectory(plan.TargetRoot);
             Directory.CreateDirectory(plan.TargetRoot);
 
             string[] excludedProcesses = GetExcludedProcesses();
@@ -351,14 +353,20 @@ namespace EasySaveConsole
 
             // Chemin Unix/Linux/macOS commence par /
             if (path.StartsWith("/"))
-                return true;
+            {
+                if (path.StartsWith("/Volumes"))
+                {
+                    return true;
+                }
+                return false;
+            }
 
             // Chemin Windows: C:\ ou \\server\share
             if (path.Length >= 2 && char.IsLetter(path[0]) && path[1] == ':')
-                return false;
+                return true;
 
             if (path.StartsWith("\\\\"))
-                return false;
+                return true;
 
             // Par défaut Unix si pas de caractéristiques Windows
             return !path.Contains("\\");
