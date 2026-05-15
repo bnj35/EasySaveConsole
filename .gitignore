@@ -433,3 +433,4 @@ FodyWeavers.xsd
 status.json
 status.xml
 jobs.json
+*.lscache
