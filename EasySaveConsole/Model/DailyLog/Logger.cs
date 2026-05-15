@@ -49,7 +49,7 @@ public class Logger
 		switch (_settings.EasyLogSettings.LogStorage)
 		{
 			case LogStorageModes.Remote:
-				logRequest = new LogRequest(_settings.LogFileFormat, action, JsonSerializer.Serialize(entry));
+				logRequest = new LogRequest(_settings.LogFileFormat, action, JsonSerializer.Serialize(entry, entry.GetType()));
 				SendLog(JsonSerializer.Serialize(logRequest));
 				break;
 
@@ -59,7 +59,7 @@ public class Logger
 
 			case LogStorageModes.Both:
 				_logger.Log(entry, _settings.LogFileFormat);
-				logRequest = new LogRequest(_settings.LogFileFormat, action, JsonSerializer.Serialize(entry));
+				logRequest = new LogRequest(_settings.LogFileFormat, action, JsonSerializer.Serialize(entry, entry.GetType()));
 				SendLog(JsonSerializer.Serialize(logRequest));
 				break;
 
@@ -73,7 +73,6 @@ public class Logger
 		try
 		{
 		byte[] data = Encoding.UTF8.GetBytes(logRequest);
-	// ouvre une socket à chaque fois
 		using Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         socket.Connect(IPAddress.Loopback, 5000);
 		socket.Send(data);

@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.0.0] - 2026-05-15
+### Changed
+- Multiple backup jobs can run in parallel
+- Large files can only be copied on at a time
+- Pause is a business software is detected
+- Single-instance CryptoSoft execution handling
+
+### Added
+- Priority file management
+- Pause, resume, and stop controls for running jobs
+- Centralized daily log file management
+
 ## [2.0.0] - 2026-05-06
 ### Changed
 - Rewrite of the View, replaced console interface with a graphical user interface
